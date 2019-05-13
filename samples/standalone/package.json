@@ -1,0 +1,23 @@
+{
+  "name": "@the-gear/sample-standalone",
+  "private": true,
+  "version": "0.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "keywords": [],
+  "author": "Pavel Lang <langpavel@phpskelet.org>",
+  "license": "MIT",
+  "devDependencies": {
+    "@the-gear/rollup-plugin-gear-graphql": "*",
+    "jest": "^24.8.0",
+    "rollup": "^1.11.3",
+    "typescript": "^3.4.5"
+  },
+  "dependencies": {
+    "@types/node": "^8.0.28"
+  },
+  "scripts": {
+    "test": "jest",
+    "all": "yarn build && yarn test"
+  }
+}

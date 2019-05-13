@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    // makes no sense with noEemit, it even can cause troubles
+    // "incremental": true
+    "noEmit": true,
+    "lib": ["es2017", "esnext.asynciterable"],
+    "types": ["node", "jest"],
+    "paths": {
+      "__mocks__/*": ["__mocks__/*"],
+      "*": ["types/*"]
+    }
+  }
+}

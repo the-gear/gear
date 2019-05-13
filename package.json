@@ -1,19 +1,39 @@
 {
   "private": true,
-  "scripts": {
-    "bootstrap": "lerna bootstrap",
-    "build": "tsc -b packages/x-core packages/x-cli",
-    "test": "lerna run test",
-    "clean": "rimraf packages/**/lib"
-  },
+  "name": "@the-gear/gear",
+  "description": "The ⚙️ Gear `monorepo`",
   "devDependencies": {
+    "@types/jest": "^24.0.12",
     "@types/node": "^12.0.0",
-    "ava": "^1.4.1",
+    "git-cz": "^3.0.1",
+    "jest": "^24.8.0",
+    "jest-junit": "^6.4.0",
     "lerna": "^3.13.4",
+    "prettier": "^1.17.0",
     "rimraf": "^2.6.3",
-    "typescript": "~3.4.5"
+    "rollup": "^1.11.3",
+    "ts-jest": "^24.0.2",
+    "typescript": "^3.4.5"
   },
   "workspaces": [
-    "packages/*"
-  ]
+    "packages/*",
+    "samples/*"
+  ],
+  "scripts": {
+    "bootstrap": "lerna bootstrap",
+    "clean": "tsc -b --clean ; lerna run clean && lerna clean -y",
+    "build": "tsc -b && FORCE_COLOR=1 lerna run --stream --concurrency=1 build",
+    "rebuild": "yarn clean && yarn build && yarn install",
+    "check-style": "prettier --check '**/*'",
+    "format": "prettier --write '**/*'",
+    "lint": "FORCE_COLOR=1 lerna run --stream --concurrency=1 lint",
+    "test": "jest --no-cache",
+    "test:watch": "jest --watch",
+    "watch": "FORCE_COLOR=1 lerna run --parallel watch",
+    "dev": "FORCE_COLOR=1 lerna run build && yarn devOnly",
+    "devOnly": "FORCE_COLOR=1 lerna run --parallel dev",
+    "recheck": "yarn rebuild && yarn test && yarn lint && yarn check-style",
+    "all": "yarn recheck && yarn devOnly",
+    "commit": "git-cz"
+  }
 }

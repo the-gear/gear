@@ -1,0 +1,15 @@
+{
+  // See http://go.microsoft.com/fwlink/?LinkId=827846 to learn about workspace recommendations.
+  // Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
+
+  // List of recommended extensions for users of this workspace:
+  "recommendations": [
+    // Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
+    "ms-vscode.vscode-typescript-tslint-plugin",
+    "esbenp.prettier-vscode",
+    "codezombiech.gitignore",
+    "EditorConfig.EditorConfig"
+  ],
+  // List of unwanted extensions for this workspace:
+  "unwantedRecommendations": ["eg2.tslint"]
+}

@@ -1,0 +1,45 @@
+.*
+!.vscode
+.env
+.DS_Store
+package-lock.json
+*.map
+
+# git submodule
+docs/
+secrets/
+
+# intentionaly ignored:
+*.md
+
+# ignored: modules, generated output etc
+node_modules/
+dist/
+coverage/*
+*.log
+*.iml
+.idea/
+coverage/
+test-results/
+
+# generated files
+*.graphql.ts
+*.gql.ts
+*.tsbuildinfo
+
+# unknown files for prettier
+*.tf
+*.sh
+*.zip
+*.snap
+*.config
+*.b64
+*.bin
+*.hex
+*.txt
+
+# generated files
+*.graphql.ts
+*.gql.ts
+*.tsbuildinfo
+*.tfstate

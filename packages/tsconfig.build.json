@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "composite": true
+  },
+  "files": [],
+  "include": [],
+  "references": [
+    { "path": "./cli" },
+    { "path": "./graphql-types" },
+    { "path": "./rollup-plugin-gear-graphql" }
+  ]
+}

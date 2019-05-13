@@ -1,0 +1,22 @@
+# top-most EditorConfig file
+root = true
+
+# all files
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 2
+indent_style = space
+insert_final_newline = true
+max_line_length = 100
+trim_trailing_whitespace = true
+
+[*.{js,mjs,ts,tsx}]
+curly_bracket_next_line = false
+indent_brace_style = BSD KNF
+quote_type = single
+spaces_around_brackets = inside
+
+# HTML
+[*.html]
+quote_type = double

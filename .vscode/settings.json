@@ -1,0 +1,24 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+  "editor.tabSize": 2,
+  "editor.rulers": [100],
+  "editor.wordWrapColumn": 100,
+  "editor.formatOnSave": true,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "coverage": true,
+    "test-results": true
+  },
+  // "tslint.autoFixOnSave": true,
+  // "tslint.enable": true,
+  // "typescript.format.enable": false,
+  // "javascript.format.enable": false,
+  // "typescript.implementationsCodeLens.enabled": true,
+  // "typescript.referencesCodeLens.enabled": true,
+  // "javascript.referencesCodeLens.enabled": true,
+  // "editor.rulers": [100]
+  "typescript.tsdk": "./node_modules/typescript/lib"
+}

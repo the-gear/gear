@@ -1,4 +1,3 @@
-
 # Created by https://www.gitignore.io/api/node
 
 ### Node ###
@@ -64,4 +63,14 @@ typings/
 
 # End of https://www.gitignore.io/api/node
 
-lib/
+*.tsbuildinfo
+
+# generated files
+dist/
+*.graphql.ts
+*.gql.ts
+
+# include generated files in samples
+!samples/**/*.graphql.ts
+!samples/**/*.gql.ts
+!samples/**/dist/

@@ -1,0 +1,13 @@
+"""
+Root query type
+"""
+type Query {
+  """
+  Say hello!
+  """
+  hello: String!
+}
+
+schema {
+  query: Query
+}

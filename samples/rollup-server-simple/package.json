@@ -1,0 +1,29 @@
+{
+  "name": "@the-gear/sample-rollup-server-simple",
+  "private": true,
+  "version": "0.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "keywords": [],
+  "author": "Pavel Lang <langpavel@phpskelet.org>",
+  "license": "MIT",
+  "devDependencies": {
+    "@the-gear/rollup-plugin-gear-graphql": "*",
+    "jest": "^24.8.0",
+    "rollup": "^1.11.3",
+    "rollup-plugin-auto-external": "^2.0.0",
+    "rollup-plugin-node-resolve": "^4.2.4",
+    "rollup-plugin-sourcemaps": "^0.4.2",
+    "rollup-plugin-typescript": "^1.0.1",
+    "typescript": "^3.4.5"
+  },
+  "dependencies": {
+    "@types/node": "^8.0.28",
+    "graphql": "^14.3.0",
+    "source-map-support": "^0.5.12"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "test": "jest"
+  }
+}

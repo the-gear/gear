@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "composite": true
+    // not makes sense for no-emit
+    // "incremental": true
+  },
+  "files": [],
+  "include": [],
+  "references": [{ "path": "./packages/tsconfig.test.json" }]
+}

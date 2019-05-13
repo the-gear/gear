@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "incremental": true
+  },
+  "files": [],
+  "include": [],
+  "references": [
+    { "path": "./tsconfig.build.json" }
+    // this is noEmit, so not make much sense and slow down...
+    // { "path": "./tsconfig.test.json" }
+  ]
+}
