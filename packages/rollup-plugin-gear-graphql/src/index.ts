@@ -3,9 +3,9 @@ import { Plugin, TransformSourceDescription, ResolveIdResult } from 'rollup';
 import { createFilter } from 'rollup-pluginutils';
 import { GqlFile, writeTsFile } from '@the-gear/graphql-transform-ts';
 
-import reexportTemplate from './template-reexport';
 import { RollupGraphqlTsConfig, RollupGraphqlTsOptions } from './types';
 import { fileMap } from './file-map';
+import { ModuleKind } from 'typescript';
 
 export * from './types';
 
@@ -17,6 +17,12 @@ export default function graphqlTs(options?: RollupGraphqlTsOptions): Plugin {
       experimentalFragmentVariables: true,
       experimentalVariableDefinitionDirectives: true,
       ...((options && options.parseOptions) || {}),
+    },
+    typescriptCompilerOptions: {
+      definitions: true,
+      sourceMap: true,
+      module: ModuleKind.ES2015,
+      ...((options && options.typescriptCompilerOptions) || {}),
     },
   };
 
@@ -61,11 +67,12 @@ export default function graphqlTs(options?: RollupGraphqlTsOptions): Plugin {
       if (!filterExt.test(id)) return;
 
       const gqlFile = new GqlFile(src, id, config);
-      const genFileName = await writeTsFile(gqlFile);
+      await writeTsFile(gqlFile);
+      const transpiled = gqlFile.getTranspileOutput();
 
       return {
-        code: reexportTemplate(genFileName, true),
-        map: { mappings: '' },
+        code: transpiled.outputText,
+        map: transpiled.sourceMapText || { mappings: '' },
       };
     },
   };

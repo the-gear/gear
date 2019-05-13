@@ -8,6 +8,7 @@ export interface GraphqlTsConfig {
    * Use prettier on output
    */
   prettify: boolean;
+  typescriptCompilerOptions: import('typescript').CompilerOptions;
 }
 
 export type GraphqlTsOptions = Partial<GraphqlTsConfig>;
