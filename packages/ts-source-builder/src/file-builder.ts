@@ -17,7 +17,7 @@ export class TsFileBuilder extends SourceModule {
     if (this.tsCode) {
       return this.tsCode;
     }
-    this.tsCode = this.getSource(this);
+    this.tsCode = this.getSource();
     return this.tsCode;
   }
 

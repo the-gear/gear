@@ -9,20 +9,22 @@ export class SourceCollection extends SourceAtom {
     this.sources.forEach((src) => modul.collect(src));
   }
   resolve(modul: SourceModule): void {
-    this.sources.forEach((src) => src.resolve(modul));
+    this.sources.forEach((src) => {
+      if (src.resolve) src.resolve(modul);
+    });
   }
   getSource(modul: SourceModule): string {
     return this.sources.map((src) => src.getSource(modul)).join('');
   }
   toString(sourceModule?: SourceModule): string {
-    const modul = sourceModule || (this instanceof SourceModule ? this : new SourceModule());
+    const modul = sourceModule || new SourceModule();
     modul.collect(this);
-    this.resolve(modul);
+    modul.resolve();
     return this.getSource(modul);
   }
 }
 
-export class SourceModule extends SourceCollection {
+export class SourceModule {
   /**
    * Module qualified file pathname
    */
@@ -46,17 +48,28 @@ export class SourceModule extends SourceCollection {
    */
   usedIdentifiers: Set<string> = new Set();
 
+  codeBlocks: SourceCollection;
+
   constructor(moduleName?: string) {
-    super();
     this.moduleName = moduleName;
+    this.codeBlocks = new SourceCollection();
   }
 
-  private seen: Set<TsSource> = new Set();
-
+  private sourceAtoms: Set<TsSource> = new Set();
   collect(atom: TsSource): void {
-    if (this.seen.has(atom)) return;
-    this.seen.add(atom);
-    atom.collect(this);
+    if (this.sourceAtoms.has(atom)) return;
+    this.sourceAtoms.add(atom);
+    if (atom.collect) atom.collect(this);
+  }
+
+  resolve() {
+    for (const atom of this.sourceAtoms) {
+      if (atom.resolve) atom.resolve(this);
+    }
+  }
+
+  getSource(): string {
+    return this.codeBlocks.getSource(this);
   }
 
   /**
