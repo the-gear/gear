@@ -54,13 +54,46 @@ describe('`ts` template tag', () => {
       const ${id4} = ${id5}
     `;
     expect(src.toString()).toMatchInlineSnapshot(`
+                              "
+                                const a = [
+                                  mineId$1, mineId$2, mineId,
+                                  mineId$1, mineId$2, mineId,
+                                ];
+                                const gen$ = gen$$1
+                              "
+                    `);
+  });
+
+  it('should import identifiers properly 1', () => {
+    const src = ts`
+      ${ts.import('a', 'b', 'c')}.inspect();
+      ${ts.import('util', null, 'util')}.inspect();
+    `;
+    expect(src.toString()).toMatchInlineSnapshot(`
+      "import { b as c } from \\"a\\";
+      import util from \\"util\\";
+
+        c.inspect();
+        util.inspect();
       "
-            const a = [
-              mineId$1, mineId$2, mineId,
-              mineId$1, mineId$2, mineId,
-            ];
-            const gen$ = gen$$1
-          "
+    `);
+  });
+
+  it('should import identifiers properly 2', () => {
+    const src = ts`
+    ${ts.import('util')}.inspect();
+    ${ts.import('util', null, 'util')}.inspect();
+    ${ts.import('util', null, 'util', true)}.inspect();
+    ${ts.import('util')}.inspect();
+    `;
+    expect(src.toString()).toMatchInlineSnapshot(`
+      "import util from \\"util\\";
+
+      util.inspect();
+      util.inspect();
+      util.inspect();
+      util.inspect();
+      "
     `);
   });
 });

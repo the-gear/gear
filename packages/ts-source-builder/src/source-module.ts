@@ -1,28 +1,6 @@
 import { RawSource } from './raw-source';
-import { SourceAtom, TsSource } from './source-atom';
-
-export class SourceCollection extends SourceAtom {
-  constructor(protected sources: TsSource[] = []) {
-    super();
-  }
-  collect(modul: SourceModule): void {
-    this.sources.forEach((src) => modul.collect(src));
-  }
-  resolve(modul: SourceModule): void {
-    this.sources.forEach((src) => {
-      if (src.resolve) src.resolve(modul);
-    });
-  }
-  getSource(modul: SourceModule): string {
-    return this.sources.map((src) => src.getSource(modul)).join('');
-  }
-  toString(sourceModule?: SourceModule): string {
-    const modul = sourceModule || new SourceModule();
-    modul.collect(this);
-    modul.resolve();
-    return this.getSource(modul);
-  }
-}
+import { TsSource } from './source-atom';
+import { SourceCollection } from './source-collection';
 
 export class SourceModule {
   /**
@@ -50,9 +28,9 @@ export class SourceModule {
 
   codeBlocks: SourceCollection;
 
-  constructor(moduleName?: string) {
+  constructor(moduleName?: string, codeBlocks: SourceCollection = new SourceCollection([])) {
     this.moduleName = moduleName;
-    this.codeBlocks = new SourceCollection();
+    this.codeBlocks = codeBlocks;
   }
 
   private sourceAtoms: Set<TsSource> = new Set();
@@ -68,8 +46,47 @@ export class SourceModule {
     }
   }
 
+  private getImportTsSource(): string {
+    const imports: string[] = [];
+    for (const [module, identMap] of this.importedModules) {
+      const idents: string[] = [];
+      let defaultAlias = null;
+      for (const [name, alias] of identMap) {
+        if (name === null) {
+          defaultAlias = alias;
+        } else {
+          if (name === alias) {
+            idents.push(name);
+          } else {
+            idents.push(`${name} as ${alias}`);
+          }
+        }
+      }
+      const fromModule = JSON.stringify(module);
+      if (idents.length) {
+        if (defaultAlias) {
+          imports.push(`import ${defaultAlias}, { ${idents.join(', ')} } from ${fromModule};`);
+        } else {
+          imports.push(`import { ${idents.join(', ')} } from ${fromModule};`);
+        }
+      } else {
+        if (defaultAlias) {
+          imports.push(`import ${defaultAlias} from ${fromModule};`);
+        } else {
+          imports.push(`import ${fromModule};`);
+        }
+      }
+    }
+    return imports.join('\n');
+  }
+
   getSource(): string {
-    return this.codeBlocks.getSource(this);
+    const srcBody: string = this.codeBlocks.getSource(this);
+    const result: string[] = [];
+    const imports = this.getImportTsSource();
+    if (imports) result.push(imports);
+    result.push(srcBody);
+    return result.join('\n');
   }
 
   /**
@@ -102,7 +119,7 @@ export class SourceModule {
 
   getImport(module: string, identifier: string | null = null, alias?: string): string {
     const importedModule = this.importedModules.get(module);
-    const prefferedIdentifier: string = identifier || alias || 'gqlid';
+    const prefferedIdentifier: string = alias || identifier || 'import$';
     if (importedModule) {
       const mappedIdent = importedModule.get(identifier);
       if (mappedIdent) {

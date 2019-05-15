@@ -1,7 +1,21 @@
 import { RawSource } from './raw-source';
-import { SourceCollection } from './source-module';
+import { SourceCollection } from './source-collection';
 import { TsSource, isTsSource } from './source-atom';
 import { Identifier } from './identifier';
+import { ImportedIdentifier } from './identifier-import';
+
+function getDedentStr(str: string): string | null {
+  const match = str.match(/(?:\r\n|\r|\n)(\s*)$/);
+  return (match && match[1]) || '';
+}
+
+function dedent(str: string, dedentStr: string | null): string {
+  if (!dedentStr) return str;
+  return str
+    .split(/\r\n|\r|\n/)
+    .map((line) => (line.startsWith(dedentStr) ? line.slice(dedentStr.length) : line))
+    .join('\n');
+}
 
 export function ts(
   literals: TemplateStringsArray,
@@ -15,9 +29,13 @@ export function ts(
     );
   }
 
+  let lastLiteral = literals[placeholdersLength];
+  const dedentStr = getDedentStr(lastLiteral);
+  lastLiteral = dedent(lastLiteral, dedentStr);
+
   const fragments: TsSource[] = [];
   for (let i = 0; i < placeholdersLength; i++) {
-    const literal = literals[i];
+    const literal = dedent(literals[i], dedentStr);
     fragments.push(new RawSource(literal));
     const source = placeholders[i];
     if (isTsSource(source)) {
@@ -25,7 +43,8 @@ export function ts(
     } else if (source === null) {
       fragments.push(new RawSource('null'));
     } else {
-      switch (typeof source) {
+      const typeofSource = typeof source;
+      switch (typeofSource) {
         case 'string':
         case 'number':
         case 'boolean': {
@@ -34,8 +53,8 @@ export function ts(
         }
         default: {
           throw new Error(
-            `[ts-source-builder] Invalid value ${JSON.stringify(source)}, ${i +
-              1}. placeholder, after code block ${literal}`,
+            `[ts-source-builder] Invalid value of type ${typeofSource}, placeholder ${i +
+              1}: ${JSON.stringify(source)}, after code block ${literal}`,
           );
         }
       }
@@ -43,7 +62,7 @@ export function ts(
   }
 
   // placeholdersLength is equal to literalsLength - 1
-  fragments.push(new RawSource(literals[placeholdersLength]));
+  fragments.push(new RawSource(lastLiteral));
 
   return new SourceCollection(fragments);
 }
@@ -56,6 +75,21 @@ export function identifier(name?: string, noRename?: boolean): Identifier {
   return new Identifier({ name, noRename });
 }
 
+export function importId(
+  from: string,
+  name?: string | null,
+  alias?: string,
+  noRename?: boolean,
+): ImportedIdentifier {
+  return new ImportedIdentifier({
+    from,
+    name,
+    alias,
+    noRename,
+  });
+}
+
 // expose for easy of use
 ts.val = value;
 ts.id = identifier;
+ts.import = importId;
