@@ -4,6 +4,7 @@ require('source-map-support/register');
 var printer = require('graphql/language/printer');
 require('graphql/language/parser');
 var source$1 = require('graphql/language/source');
+require('graphql');
 var buildASTSchema = require('graphql/utilities/buildASTSchema');
 
 // #sha384: xuioPOEDyVAS0btIobF6Mf5AxknFdxFnAM9mjl9h9mKQpoqlmcVn6qHmHDl855ve

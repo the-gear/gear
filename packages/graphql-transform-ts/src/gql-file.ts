@@ -58,7 +58,7 @@ export class GqlFile extends Source {
   documentNode: DocumentNode;
   exportDefault: string | null = null;
   declaredSchema: string | null = null;
-  graphqlImports: Set<string> = new Set();
+  // graphqlImports: Set<string> = new Set();
   /** module → (exportedId → localId) */
   importedModules: Map<string, Map<string | null, string>> = new Map();
   includes: Set<string> = new Set();
@@ -117,31 +117,31 @@ export class GqlFile extends Source {
     return freeIdent;
   }
 
-  private getImport(module: string, identifier: string | null = null, alias?: string): string {
-    const importedModule = this.importedModules.get(module);
-    const prefferedIdentifier: string = identifier || alias || 'gqlid';
-    if (importedModule) {
-      const mappedIdent = importedModule.get(identifier);
-      if (mappedIdent) {
-        return mappedIdent;
-      } else {
-        const newIdent = this.getFreeIdentifier(prefferedIdentifier);
-        importedModule.set(identifier, newIdent);
-        return newIdent;
-      }
-    } else {
-      const identMap = new Map();
-      const newName = this.getFreeIdentifier(prefferedIdentifier);
-      identMap.set(identifier, newName);
-      this.importedModules.set(module, identMap);
-      return newName;
-    }
-  }
+  // private getImport(module: string, identifier: string | null = null, alias?: string): string {
+  //   const importedModule = this.importedModules.get(module);
+  //   const prefferedIdentifier: string = identifier || alias || 'gqlid';
+  //   if (importedModule) {
+  //     const mappedIdent = importedModule.get(identifier);
+  //     if (mappedIdent) {
+  //       return mappedIdent;
+  //     } else {
+  //       const newIdent = this.getFreeIdentifier(prefferedIdentifier);
+  //       importedModule.set(identifier, newIdent);
+  //       return newIdent;
+  //     }
+  //   } else {
+  //     const identMap = new Map();
+  //     const newName = this.getFreeIdentifier(prefferedIdentifier);
+  //     identMap.set(identifier, newName);
+  //     this.importedModules.set(module, identMap);
+  //     return newName;
+  //   }
+  // }
 
-  private getTypeImport(module: string, qualifiedTypeName: string): string {
-    // return this.getImport(module, identifier, alias);
-    return `import(${json(module)}).${qualifiedTypeName}`;
-  }
+  // private getTypeImport(module: string, qualifiedTypeName: string): string {
+  //   // return this.getImport(module, identifier, alias);
+  //   return `import(${json(module)}).${qualifiedTypeName}`;
+  // }
 
   private getImportTsSource(): string {
     const imports: string[] = [];
@@ -260,14 +260,28 @@ export class GqlFile extends Source {
   }
 
   private processObjectTypeDefinition(node: ObjectTypeDefinitionNode) {
-    const typeConfigName = `${node.name.value}TypeConfig`;
-    const graphQLObjectTypeId = this.getTypeImport('graphql/type', 'GraphQLObjectTypeConfig');
+    const strTypeName = node.name.value;
+    const idTypeName = `${strTypeName}Type`;
+    const idTypeFactory = `create${idTypeName}`;
+    const idGraphQLObjectType = this.getImport('graphql', 'GraphQLObjectType');
+    // const idGraphQLObjectTypeConfig = this.getTypeImport('graphql/type', 'GraphQLObjectTypeConfig');
     const description = node.description && node.description.value;
     // name: string;
     // description?: ?string
     // interfaces?: GraphQLInterfacesThunk | Array<GraphQLInterfaceType>;
     // isTypeOf?: (value: any, info?: GraphQLResolveInfo) => boolean;
     // fields: GraphQLFieldConfigMapThunk | GraphQLFieldConfigMap;
+
+    this.addCodeBlock(
+      `
+      /**
+       *
+       */
+      export type ${idTypeName} = ${idGraphQLObjectType}<any,any,any>;
+      `,
+      idTypeName,
+    );
+
     this.addCodeBlock(
       `
       /**
@@ -275,13 +289,18 @@ export class GqlFile extends Source {
        *
        * ${description}
        */
-      export const ${typeConfigName}: ${graphQLObjectTypeId} = {
-        name: ${json(node.name.value)},
-        ${description ? `description: ${json(description)},` : ''}
-        // interfaces?: GraphQLInterfacesThunk | Array<GraphQLInterfaceType>;
+      export function ${idTypeFactory}(): ${idGraphQLObjectType} {
+        return new ${idGraphQLObjectType}({
+          name: ${json(strTypeName)},
+          ${description ? `description: ${json(description)},` : ''}
+          // interfaces?: GraphQLInterfacesThunk | Array<GraphQLInterfaceType>;,
+          fields: () => {
+
+          }
+        });
       };
       `,
-      typeConfigName,
+      idTypeFactory,
     );
   }
 
