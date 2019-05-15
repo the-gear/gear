@@ -1,58 +1,81 @@
-import { resolve, dirname } from 'path';
-import { Plugin, TransformSourceDescription, ResolveIdResult } from 'rollup';
+// import { resolve, dirname } from 'path';
+import { Plugin, TransformSourceDescription } from 'rollup';
 import { createFilter } from 'rollup-pluginutils';
-import { GqlFile, writeTsFile } from '@the-gear/graphql-transform-ts';
-
-import { RollupGraphqlTsConfig, RollupGraphqlTsOptions } from './types';
-import { fileMap } from './file-map';
 import { ModuleKind } from 'typescript';
+import {
+  GraphqlTsOptions,
+  GqlFile,
+  writeJsFile,
+  writeTsFile,
+  writeDTsFile,
+} from '@the-gear/graphql-transform-ts';
 
-export * from './types';
+export interface RollupGraphqlTsOptions extends GraphqlTsOptions {
+  include?: Array<string | RegExp> | string | RegExp | null;
+  exclude?: Array<string | RegExp> | string | RegExp | null;
 
-export default function graphqlTs(options?: RollupGraphqlTsOptions): Plugin {
-  const config: RollupGraphqlTsConfig = {
+  /**
+   * Write `….graphql.js` file alongside `….graphql` source
+   * @default false
+   */
+  writeJs?: boolean;
+
+  /**
+   * Write `….graphql.ts` file alongside `….graphql` source
+   * @default false
+   */
+  writeTs?: boolean;
+
+  /**
+   * Write `….graphql.d.ts` file alongside `….graphql` source
+   * @default `!options.writeTs`
+   */
+  writeDTs?: boolean;
+}
+
+export default function graphqlTs(opts: RollupGraphqlTsOptions = {}): Plugin {
+  const options: RollupGraphqlTsOptions = {
     prettify: true,
-    ...options,
+    writeDTs: !opts.writeTs,
+    ...opts,
     parseOptions: {
       experimentalFragmentVariables: true,
       experimentalVariableDefinitionDirectives: true,
-      ...((options && options.parseOptions) || {}),
-    },
-    typescriptCompilerOptions: {
-      definitions: true,
-      sourceMap: true,
-      module: ModuleKind.ES2015,
-      ...((options && options.typescriptCompilerOptions) || {}),
+      ...((opts && opts.parseOptions) || {}),
     },
   };
+  options.compilerOptions = {
+    module: ModuleKind.ES2015,
+    ...((opts && opts.compilerOptions) || {}),
+    declaration: options.writeDTs,
+  };
 
-  const filter = createFilter(config.include, config.exclude);
-  const filterExt = /\.(graphql|gql)$/i;
-  const filterExtTs = /\.(graphql|gql)\.ts$/i;
+  const filter = createFilter(options.include, options.exclude);
+  const filterExt = /\.(graphql|gql)s?$/i;
 
   return {
     name: 'graphql-ts',
 
-    buildStart() {
-      console.log(`[graphql-ts] start`);
-    },
+    // buildStart() {
+    //   console.log(`[graphql-ts] start`);
+    // },
 
-    resolveId(id: string, parent: string): ResolveIdResult {
-      if (!filter(id)) return;
-      if (!filterExt.test(id)) return;
-      // console.log(`[graphql-ts] rslv ${parent} -> ${id}`);
-      const resolved = resolve(dirname(parent), id);
-      // console.log(`[graphql-ts] rslv ${resolved}`);
-      return resolved;
-    },
+    // resolveId(id: string, parent: string): ResolveIdResult {
+    //   if (!filter(id)) return;
+    //   if (!filterExt.test(id)) return;
+    //   // console.log(`[graphql-ts] rslv ${parent} -> ${id}`);
+    //   const resolved = resolve(dirname(parent), id);
+    //   // console.log(`[graphql-ts] rslv ${resolved}`);
+    //   return resolved;
+    // },
 
-    load(id) {
-      if (!filter(id)) return null;
-      if (!filterExtTs.test(id)) return null;
-      console.log('[graphql-ts] load', id);
-      const file = fileMap.get(id);
-      return file ? file.getTsCode() : null;
-    },
+    // load(id) {
+    //   if (!filter(id)) return null;
+    //   if (!filterExtTs.test(id)) return null;
+    //   console.log('[graphql-ts] load', id);
+    //   const file = fileMap.get(id);
+    //   return file ? file.getJsCode() : null;
+    // },
 
     // watchChange(id) {
     //   console.log('[graphql-ts] wtch', id);
@@ -66,13 +89,29 @@ export default function graphqlTs(options?: RollupGraphqlTsOptions): Plugin {
       if (!filter(id)) return;
       if (!filterExt.test(id)) return;
 
-      const gqlFile = new GqlFile(src, id, config);
-      await writeTsFile(gqlFile);
+      const gqlFile = new GqlFile(src, id, options);
       const transpiled = gqlFile.getTranspileOutput();
+
+      const { writeJs, writeTs, writeDTs } = options;
+
+      const writes = [];
+
+      if (writeTs) writes.push(writeTsFile(gqlFile));
+      if (writeJs) writes.push(writeJsFile(gqlFile));
+      if (writeDTs) writes.push(writeDTsFile(gqlFile));
+
+      const { diagnostics } = transpiled;
+      if (diagnostics && diagnostics.length) {
+        for (const diag of diagnostics) {
+          this.warn(`${diag.messageText}`);
+        }
+      }
+
+      await Promise.all(writes);
 
       return {
         code: transpiled.outputText,
-        map: transpiled.sourceMapText || { mappings: '' },
+        map: { mappings: '' },
       };
     },
   };

@@ -66,6 +66,7 @@ typings/
 *.tsbuildinfo
 
 # generated files
+test-results/
 dist/
 *.graphql.ts
 *.gql.ts

@@ -1,9 +1,9 @@
 """
-Root query type
+Root query type 3
 """
 type Query {
   """
-  Say hello!
+  Say hello! 2
   """
   hello: String!
 }

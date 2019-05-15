@@ -32,7 +32,11 @@ const jsonPlugin = json({
   compact: true, // Default: false
 });
 
-const gearGraphqlPlugin = gearGraphql();
+const gearGraphqlPlugin = gearGraphql({
+  writeJs: true,
+  writeTs: true,
+  writeDTs: true,
+});
 
 // https://github.com/rollup/rollup-plugin-replace#usage
 const replacePlugin = replace({

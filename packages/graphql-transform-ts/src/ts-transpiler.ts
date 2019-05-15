@@ -57,6 +57,8 @@ export function transpileModule(
   // so pass --noResolve to avoid reporting missing file errors.
   options.noResolve = true;
 
+  options.inlineSources = options.sourceMap;
+
   // if jsx is specified then treat file as .tsx
   const inputFileName = transpileOptions.fileName || (options.jsx ? 'module.tsx' : 'module.ts');
   const sourceFile = ts.createSourceFile(inputFileName, input, options.target!); // TODO: GH#18217

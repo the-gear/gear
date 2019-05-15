@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "allowJs": true
   },
   "include": ["src/**/*"],
   "exclude": ["**/__tests__", "**/__mocks__"],

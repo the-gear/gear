@@ -1,14 +1,12 @@
 import { ParseOptions } from 'graphql/language/parser';
 import { Location } from 'graphql/language/source';
 
-export interface GraphqlTsConfig {
+export interface GraphqlTsOptions {
   locationOffset?: Location;
-  parseOptions: ParseOptions;
+  parseOptions?: ParseOptions;
   /**
    * Use prettier on output
    */
-  prettify: boolean;
-  typescriptCompilerOptions: import('typescript').CompilerOptions;
+  prettify?: boolean;
+  compilerOptions?: import('typescript').CompilerOptions;
 }
-
-export type GraphqlTsOptions = Partial<GraphqlTsConfig>;
