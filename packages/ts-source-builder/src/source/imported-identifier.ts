@@ -19,7 +19,7 @@ type ImportedIdentifierConfig = {
   noRename?: boolean;
 };
 
-export class ImportedIdentifier extends SourceAtom {
+export class ImportedIdentifier extends SourceAtom implements ImportedIdentifierConfig {
   from: string;
   name?: string | null;
   alias?: string | null;

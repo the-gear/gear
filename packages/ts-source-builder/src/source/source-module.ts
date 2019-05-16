@@ -1,6 +1,7 @@
 import { RawSource } from './raw-source';
 import { TsSource } from './source-atom';
 import { SourceCollection } from './source-collection';
+import { ConstData } from './const-data';
 
 export class SourceModule {
   /**
@@ -57,6 +58,17 @@ export class SourceModule {
     if (this.sources.has(atom)) return;
     this.sources.add(atom);
     if (atom.collect) atom.collect(this);
+  }
+
+  private dataMap: Map<any, ConstData> = new Map();
+  collectData(data: any, ref: ConstData) {
+    if (this.dataMap.has(data)) {
+      const haveVal = this.dataMap.get(data) as ConstData;
+      const newVal = ref.resolveData(haveVal);
+      if (haveVal !== newVal) {
+        this.dataMap.set(data, newVal);
+      }
+    }
   }
 
   resolve() {

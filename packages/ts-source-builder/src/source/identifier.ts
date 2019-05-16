@@ -6,7 +6,7 @@ type IdentifierConfig = {
   noRename?: boolean;
 };
 
-export class Identifier extends SourceAtom {
+export class Identifier extends SourceAtom implements IdentifierConfig {
   name?: string;
   noRename?: boolean;
   resolvedName?: string;
