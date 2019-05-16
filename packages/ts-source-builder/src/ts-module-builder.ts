@@ -3,7 +3,7 @@ import { TranspileOutput, transpileModule } from './transpiler';
 import { SourceModule } from './source/source-module';
 
 export class TsModuleBuilder extends SourceModule {
-  constructor(moduleName: string, public compilerOptions: CompilerOptions = {}) {
+  constructor(moduleName: string = 'no-name', public compilerOptions: CompilerOptions = {}) {
     super(moduleName);
   }
 
@@ -53,7 +53,7 @@ export class TsModuleBuilder extends SourceModule {
     return this.getTranspileOutput().outputText;
   }
 
-  getDeclaration(): string | null {
-    return this.getTranspileOutput().declarationText || null;
+  getDeclaration(): string {
+    return this.getTranspileOutput().declarationText;
   }
 }

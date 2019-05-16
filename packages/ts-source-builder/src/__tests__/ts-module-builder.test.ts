@@ -19,10 +19,10 @@ describe('TsModuleBuilder', () => {
     const modul = new TsModuleBuilder('test-js');
     modul.add(ts`export const greeter: string = 'Ahoj!'`);
     expect(modul.getJsCode().trim()).toMatchInlineSnapshot(`
-                              "\\"use strict\\";
-                              exports.__esModule = true;
-                              exports.greeter = 'Ahoj!';"
-                    `);
+            "\\"use strict\\";
+            exports.__esModule = true;
+            exports.greeter = 'Ahoj!';"
+        `);
   });
 
   it('should import module for side effect', () => {
@@ -33,13 +33,12 @@ describe('TsModuleBuilder', () => {
   });
 
   it('should generate javascript - ES2015', () => {
-    const modul = new TsModuleBuilder('test-js');
+    const modul = new TsModuleBuilder('test-js', {
+      module: ModuleKind.ES2015,
+      preferConst: true,
+    });
     modul.add(ts`export const greeter: string = 'Ahoj!'`);
-    expect(modul.getJsCode().trim()).toMatchInlineSnapshot(`
-                              "\\"use strict\\";
-                              exports.__esModule = true;
-                              exports.greeter = 'Ahoj!';"
-                    `);
+    expect(modul.getJsCode().trim()).toMatchInlineSnapshot(`"export var greeter = 'Ahoj!';"`);
   });
 
   it('should generate declarations', () => {
@@ -48,9 +47,9 @@ describe('TsModuleBuilder', () => {
     });
     modul.add(ts`export const greeter: string = 'Ahoj!'`);
     expect(modul.getDeclaration().trim()).toMatchInlineSnapshot(`
-                              "/// <amd-module name=\\"test-decl\\" />
-                              export declare const greeter: string;"
-                    `);
+            "/// <amd-module name=\\"test-decl\\" />
+            export declare const greeter: string;"
+        `);
   });
 
   it('should infer declarations', () => {
@@ -59,9 +58,9 @@ describe('TsModuleBuilder', () => {
     });
     modul.add(ts`export const greeter = 'Ahoj!'`);
     expect(modul.getDeclaration().trim()).toMatchInlineSnapshot(`
-                              "/// <amd-module name=\\"test-decl-infer\\" />
-                              export declare const greeter = \\"Ahoj!\\";"
-                    `);
+            "/// <amd-module name=\\"test-decl-infer\\" />
+            export declare const greeter = \\"Ahoj!\\";"
+        `);
   });
 
   it('should reexport declarations', () => {
@@ -71,9 +70,9 @@ describe('TsModuleBuilder', () => {
     const sourceId = ts.import('graphql', 'Source');
     modul.add(ts`export const src: ${sourceId} = new ${sourceId}('{hello}');`);
     expect(modul.getDeclaration().trim()).toMatchInlineSnapshot(`
-                              "/// <amd-module name=\\"test-decl-reexport\\" />
-                              import { Source } from \\"graphql\\";
-                              export declare const src: Source;"
-                    `);
+            "/// <amd-module name=\\"test-decl-reexport\\" />
+            import { Source } from \\"graphql\\";
+            export declare const src: Source;"
+        `);
   });
 });

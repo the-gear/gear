@@ -10,7 +10,7 @@ export interface TranspileOutput {
   diagnostics?: ts.Diagnostic[];
   outputText: string;
   sourceMapText?: string;
-  declarationText?: string;
+  declarationText: string;
 }
 
 /*
@@ -61,6 +61,7 @@ export function transpileModule(
 
   // EDIT START
   options.inlineSources = options.sourceMap;
+  options.declaration = true;
   // EDIT END
 
   // if jsx is specified then treat file as .tsx
@@ -123,6 +124,7 @@ export function transpileModule(
   );
 
   if (outputText === undefined) throw new Error('Output generation failed');
+  if (declarationText === undefined) throw new Error('Declaration generation failed');
 
   return {
     diagnostics,
