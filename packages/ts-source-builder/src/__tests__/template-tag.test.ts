@@ -54,14 +54,14 @@ describe('`ts` template tag', () => {
       const ${id4} = ${id5}
     `;
     expect(src.toString()).toMatchInlineSnapshot(`
-                              "
-                                const a = [
-                                  mineId$1, mineId$2, mineId,
-                                  mineId$1, mineId$2, mineId,
-                                ];
-                                const gen$ = gen$$1
-                              "
-                    `);
+                                    "
+                                      const a = [
+                                        mineId$1, mineId$2, mineId,
+                                        mineId$1, mineId$2, mineId,
+                                      ];
+                                      const gen$ = gen$$1
+                                    "
+                        `);
   });
 
   it('should import identifiers properly 1', () => {
@@ -70,13 +70,13 @@ describe('`ts` template tag', () => {
       ${ts.import('util', null, 'util')}.inspect();
     `;
     expect(src.toString()).toMatchInlineSnapshot(`
-      "import { b as c } from \\"a\\";
-      import util from \\"util\\";
+            "import { b as c } from \\"a\\";
+            import util from \\"util\\";
 
-        c.inspect();
-        util.inspect();
-      "
-    `);
+              c.inspect();
+              util.inspect();
+            "
+        `);
   });
 
   it('should import identifiers properly 2', () => {
@@ -85,14 +85,16 @@ describe('`ts` template tag', () => {
     ${ts.import('util', null, 'util')}.inspect();
     ${ts.import('util', null, 'util', true)}.inspect();
     ${ts.import('util')}.inspect();
+    ${ts.import('util', 'debuglog')}('test');
     `;
     expect(src.toString()).toMatchInlineSnapshot(`
-      "import util from \\"util\\";
+      "import util, { debuglog } from \\"util\\";
 
       util.inspect();
       util.inspect();
       util.inspect();
       util.inspect();
+      debuglog('test');
       "
     `);
   });

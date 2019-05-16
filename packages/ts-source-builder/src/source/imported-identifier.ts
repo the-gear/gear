@@ -6,15 +6,23 @@ type ImportedIdentifierConfig = {
    * Name of exported bindig. Use `null` for default export.
    */
   from: string;
+  /**
+   * Name of exported bindig.
+   * Use `null` for default export.
+   * Use `null` together with alias `null` to import only for side effect
+   */
   name?: string | null;
-  alias?: string;
+  /**
+   * null — only import but do not create identifier for (usefull for modules with side effect)
+   */
+  alias?: string | null;
   noRename?: boolean;
 };
 
 export class ImportedIdentifier extends SourceAtom {
   from: string;
   name?: string | null;
-  alias?: string;
+  alias?: string | null;
   noRename?: boolean;
   resolvedAlias?: string;
 
@@ -27,18 +35,21 @@ export class ImportedIdentifier extends SourceAtom {
   }
 
   collect(modul: SourceModule) {
-    if (this.noRename) {
+    if (this.noRename || (this.alias === null && this.name === null)) {
       this.resolvedAlias = modul.getImport(this.from, this.name, this.alias);
     }
   }
 
   resolve(modul: SourceModule) {
+    if (this.alias === null && this.name === null) return;
+
     if (!this.resolvedAlias) {
       this.alias = modul.getImport(this.from, this.name, this.alias);
     }
   }
 
   getSource(modul: SourceModule) {
+    if (this.alias === null && this.name === null) return '';
     if (this.noRename) {
       const requestedName = this.alias || this.name;
       if (this.resolvedAlias !== requestedName) {

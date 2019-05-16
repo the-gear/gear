@@ -1,8 +1,11 @@
-import { RawSource } from './raw-source';
-import { SourceCollection } from './source-collection';
-import { TsSource, isTsSource } from './source-atom';
-import { Identifier } from './identifier';
-import { ImportedIdentifier } from './identifier-import';
+import {
+  RawSource,
+  SourceCollection,
+  TsSource,
+  isTsSource,
+  Identifier,
+  ImportedIdentifier,
+} from './source';
 
 function getDedentStr(str: string): string | null {
   const match = str.match(/(?:\r\n|\r|\n)(\s*)$/);
@@ -78,7 +81,7 @@ export function identifier(name?: string, noRename?: boolean): Identifier {
 export function importId(
   from: string,
   name?: string | null,
-  alias?: string,
+  alias?: string | null,
   noRename?: boolean,
 ): ImportedIdentifier {
   return new ImportedIdentifier({

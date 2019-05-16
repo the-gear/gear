@@ -15,6 +15,9 @@ export class SourceCollection extends SourceAtom {
   getSource(modul: SourceModule): string {
     return this.sources.map((src) => src.getSource(modul)).join('');
   }
+  push(source: TsSource) {
+    this.sources.push(source);
+  }
   toString(sourceModule?: SourceModule): string {
     const modul = sourceModule || new SourceModule(undefined, this);
     modul.collect(this);

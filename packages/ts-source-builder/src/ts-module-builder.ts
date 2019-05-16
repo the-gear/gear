@@ -1,16 +1,21 @@
 import { CompilerOptions } from 'typescript';
 import { TranspileOutput, transpileModule } from './transpiler';
-import { SourceModule } from './source-module';
+import { SourceModule } from './source/source-module';
 
-export class TsFileBuilder extends SourceModule {
+export class TsModuleBuilder extends SourceModule {
+  constructor(moduleName: string, public compilerOptions: CompilerOptions = {}) {
+    super(moduleName);
+  }
+
   /**
    * cache
    */
   private tsCode: string | null = null;
   private transpileOutput: TranspileOutput | null = null;
 
-  constructor(moduleName: string, public compilerOptions: CompilerOptions) {
-    super(moduleName);
+  invalidate() {
+    this.tsCode = null;
+    this.transpileOutput = null;
   }
 
   getTsCode(): string {

@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import * as ts from 'typescript';
 
 // **********************************************************
@@ -57,7 +59,9 @@ export function transpileModule(
   // so pass --noResolve to avoid reporting missing file errors.
   options.noResolve = true;
 
+  // EDIT START
   options.inlineSources = options.sourceMap;
+  // EDIT END
 
   // if jsx is specified then treat file as .tsx
   const inputFileName = transpileOptions.fileName || (options.jsx ? 'module.tsx' : 'module.ts');
@@ -139,27 +143,6 @@ function endsWith(str: string, suffix: string): boolean {
 
 function fileExtensionIs(path: string, extension: string): boolean {
   return path.length > extension.length && endsWith(path, extension);
-}
-
-/*
- * This is a shortcut function for transpileModule - it accepts transpileOptions as parameters and returns only outputText part of the result.
- */
-export function transpile(
-  input: string,
-  compilerOptions?: ts.CompilerOptions,
-  fileName?: string,
-  diagnostics?: ts.Diagnostic[],
-  moduleName?: string,
-): string {
-  const output = transpileModule(input, {
-    compilerOptions,
-    fileName,
-    reportDiagnostics: !!diagnostics,
-    moduleName,
-  });
-  // addRange correctly handles cases when wither 'from' or 'to' argument is missing
-  addRange(diagnostics, output.diagnostics);
-  return output.outputText;
 }
 
 /**

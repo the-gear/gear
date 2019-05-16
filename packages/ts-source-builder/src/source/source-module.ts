@@ -19,29 +19,48 @@ export class SourceModule {
    *
    * @internal
    */
-  importedModules: Map<string, Map<string | null, string>> = new Map();
+  private importedModules: Map<string, Map<string | null, string>> = new Map();
 
   /**
    * Set of all used identifiers
    */
-  usedIdentifiers: Set<string> = new Set();
+  private usedIdentifiers: Set<string> = new Set();
 
-  codeBlocks: SourceCollection;
+  private codeBlocks: SourceCollection;
+
+  private sources: Set<TsSource> = new Set();
 
   constructor(moduleName?: string, codeBlocks: SourceCollection = new SourceCollection([])) {
     this.moduleName = moduleName;
     this.codeBlocks = codeBlocks;
   }
 
-  private sourceAtoms: Set<TsSource> = new Set();
+  invalidate() {}
+
+  /**
+   * get this module qualified file pathname
+   *
+   * for example: '@the-gear/samples/standalone/src/schema.graphql'
+   */
+  getModuleName(): string | undefined {
+    return this.moduleName;
+  }
+
+  add(code: TsSource): this {
+    this.invalidate();
+    this.codeBlocks.push(code);
+    this.collect(code);
+    return this;
+  }
+
   collect(atom: TsSource): void {
-    if (this.sourceAtoms.has(atom)) return;
-    this.sourceAtoms.add(atom);
+    if (this.sources.has(atom)) return;
+    this.sources.add(atom);
     if (atom.collect) atom.collect(this);
   }
 
   resolve() {
-    for (const atom of this.sourceAtoms) {
+    for (const atom of this.sources) {
       if (atom.resolve) atom.resolve(this);
     }
   }
@@ -89,15 +108,6 @@ export class SourceModule {
     return result.join('\n');
   }
 
-  /**
-   * get this module qualified file pathname
-   *
-   * for example: '@the-gear/samples/standalone/src/schema.graphql'
-   */
-  getModuleName(): string | undefined {
-    return this.moduleName;
-  }
-
   useIdentifier(name: string): string {
     if (this.usedIdentifiers.has(name)) {
       throw new Error(`Identifier '${name}' is already registered`);
@@ -117,8 +127,8 @@ export class SourceModule {
     return freeIdent;
   }
 
-  getImport(module: string, identifier: string | null = null, alias?: string): string {
-    const importedModule = this.importedModules.get(module);
+  getImport(moduleName: string, identifier: string | null = null, alias?: string | null): string {
+    const importedModule = this.importedModules.get(moduleName);
     const prefferedIdentifier: string = alias || identifier || 'import$';
     if (importedModule) {
       const mappedIdent = importedModule.get(identifier);
@@ -131,15 +141,18 @@ export class SourceModule {
       }
     } else {
       const identMap = new Map();
+      this.importedModules.set(moduleName, identMap);
+      if (identifier === null && alias === null) {
+        return '';
+      }
       const newName = this.getFreeIdentifier(prefferedIdentifier);
       identMap.set(identifier, newName);
-      this.importedModules.set(module, identMap);
       return newName;
     }
   }
 
-  getTypeImport(module: string, qualifiedTypeName: string): RawSource {
-    // return this.getImport(module, identifier, alias);
-    return new RawSource(`import(${JSON.stringify(module)}).${qualifiedTypeName}`);
+  getTypeImport(moduleName: string, qualifiedTypeName: string): RawSource {
+    // return this.getImport(moduleName, identifier, alias);
+    return new RawSource(`import(${JSON.stringify(moduleName)}).${qualifiedTypeName}`);
   }
 }
