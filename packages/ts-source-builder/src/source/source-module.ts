@@ -60,21 +60,42 @@ export class SourceModule {
     if (atom.collect) atom.collect(this);
   }
 
-  private dataMap: Map<any, ConstData> = new Map();
-  collectData(data: any, ref: ConstData) {
+  private dataMap: Map<unknown, ConstData> = new Map();
+  collectData(data: unknown, ref: ConstData) {
     if (this.dataMap.has(data)) {
       const haveVal = this.dataMap.get(data) as ConstData;
       const newVal = ref.resolveData(haveVal);
       if (haveVal !== newVal) {
         this.dataMap.set(data, newVal);
       }
+    } else {
+      this.dataMap.set(data, ref);
     }
+  }
+
+  getIdForData(data: unknown): string | null {
+    const constData = this.dataMap.get(data);
+    return (constData && constData.name) || null;
   }
 
   resolve() {
     for (const atom of this.sources) {
       if (atom.resolve) atom.resolve(this);
     }
+  }
+
+  private getDataTsSource(): string {
+    const results: string[] = [];
+    for (const [data, constData] of this.dataMap) {
+      if (constData.data === data) {
+        const id = this.getFreeIdentifier(constData.name);
+        if (!constData.name) {
+          constData.name = id;
+        }
+        results.push(`const ${id} = ${constData.serialize(data, this)};`);
+      }
+    }
+    return results.join('\n');
   }
 
   private getImportTsSource(): string {
@@ -114,8 +135,10 @@ export class SourceModule {
   getSource(): string {
     const srcBody: string = this.codeBlocks.getSource(this);
     const result: string[] = [];
+    const data = this.getDataTsSource();
     const imports = this.getImportTsSource();
     if (imports) result.push(imports);
+    if (data) result.push(data);
     result.push(srcBody);
     return result.join('\n');
   }

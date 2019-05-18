@@ -1,7 +1,7 @@
 import { SourceAtom } from './source-atom';
 import { SourceModule } from './source-module';
 
-type IdentifierConfig = {
+export type IdentifierConfig = {
   name?: string;
   noRename?: boolean;
 };

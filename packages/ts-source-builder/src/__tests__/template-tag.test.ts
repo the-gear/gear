@@ -29,14 +29,12 @@ describe('`ts` template tag', () => {
   });
 
   it('can handle null', () => {
-    expect(ts`export const nullConst = ${null};`.toString()).toEqual(
-      'export const nullConst = null;',
-    );
+    expect(ts`/* ${null} */`.toString()).toEqual('/*  */');
   });
 
   it('can handle nested source', () => {
     const id = ts.id('mineId');
-    const val = ts.val(123);
+    const val = ts`123`;
     expect(ts`export const ${id} = ${val};`.toString()).toEqual(`export const mineId = 123;`);
   });
 
@@ -53,15 +51,13 @@ describe('`ts` template tag', () => {
       ];
       const ${id4} = ${id5}
     `;
-    expect(src.toString()).toMatchInlineSnapshot(`
-                                    "
-                                      const a = [
-                                        mineId$1, mineId$2, mineId,
-                                        mineId$1, mineId$2, mineId,
-                                      ];
-                                      const gen$ = gen$$1
-                                    "
-                        `);
+    expect(src.toString().trim()).toMatchInlineSnapshot(`
+      "const a = [
+          mineId$1, mineId$2, mineId,
+          mineId$1, mineId$2, mineId,
+        ];
+        const gen$ = gen$$1"
+    `);
   });
 
   it('should import identifiers properly 1', () => {
@@ -70,13 +66,13 @@ describe('`ts` template tag', () => {
       ${ts.import('util', null, 'util')}.inspect();
     `;
     expect(src.toString()).toMatchInlineSnapshot(`
-            "import { b as c } from \\"a\\";
-            import util from \\"util\\";
+      "import { b as c } from \\"a\\";
+      import util from \\"util\\";
 
-              c.inspect();
-              util.inspect();
-            "
-        `);
+        c.inspect();
+        util.inspect();
+      "
+    `);
   });
 
   it('should import identifiers properly 2', () => {

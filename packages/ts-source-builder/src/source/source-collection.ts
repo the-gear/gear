@@ -1,5 +1,6 @@
 import { SourceAtom, TsSource } from './source-atom';
 import { SourceModule } from './source-module';
+
 export class SourceCollection extends SourceAtom {
   constructor(protected sources: TsSource[]) {
     super();

@@ -1,7 +1,7 @@
 import { SourceAtom } from './source-atom';
 import { SourceModule } from './source-module';
 
-type ImportedIdentifierConfig = {
+export type ImportedIdentifierConfig = {
   /**
    * Name of exported bindig. Use `null` for default export.
    */

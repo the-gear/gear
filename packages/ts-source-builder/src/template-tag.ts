@@ -1,5 +1,7 @@
+import { ConstDataConfigWithoutData } from './source/const-data';
 import {
   RawSource,
+  ConstData,
   SourceCollection,
   TsSource,
   isTsSource,
@@ -44,7 +46,8 @@ export function ts(
     if (isTsSource(source)) {
       fragments.push(source);
     } else if (source === null) {
-      fragments.push(new RawSource('null'));
+      // ignore null
+      // fragments.push(new RawSource('null'));
     } else {
       const typeofSource = typeof source;
       switch (typeofSource) {
@@ -70,8 +73,12 @@ export function ts(
   return new SourceCollection(fragments);
 }
 
-export function value(val: any): RawSource {
-  return new RawSource(JSON.stringify(val));
+export function value(data: any, config?: ConstDataConfigWithoutData): ConstData {
+  // return new RawSource(JSON.stringify(val));
+  return new ConstData({
+    ...config,
+    data,
+  });
 }
 
 export function identifier(name?: string, noRename?: boolean): Identifier {

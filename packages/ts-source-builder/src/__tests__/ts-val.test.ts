@@ -14,29 +14,28 @@ const obj2 = {
 
 describe('ts.val', () => {
   it('should serialize simple object', () => {
-    expect(
-      ts
-        .val(a)
-        .toString()
-        .trim(),
-    ).toMatchInlineSnapshot(`"{\\"thisIs\\":\\"A\\"}"`);
+    expect(ts`${ts.val(a)}`.toString().trim()).toMatchInlineSnapshot(`
+      "const gen$ = gen$;
+      {
+        thisIs: \\"A\\"}"
+    `);
   });
 
   it('should serialize nested objects', () => {
-    expect(
-      ts
-        .val(obj2)
-        .toString()
-        .trim(),
-    ).toMatchInlineSnapshot(
-      `"{\\"a\\":{\\"int123\\":123,\\"obj1\\":{\\"arr\\":[\\"the A:\\",{\\"thisIs\\":\\"A\\"},\\"and the B\\",{\\"and this is\\":\\"B\\",\\"with\\":[1,2,3]}],\\"arr2\\":[\\"the A:\\",{\\"thisIs\\":\\"A\\"},\\"and the B\\",{\\"and this is\\":\\"B\\",\\"with\\":[1,2,3]}],\\"arr3\\":[\\"the A:\\",{\\"thisIs\\":\\"A\\"},\\"and the B\\",{\\"and this is\\":\\"B\\",\\"with\\":[1,2,3]}]},\\"nested\\":{\\"a\\":{\\"thisIs\\":\\"A\\"},\\"b\\":{\\"and this is\\":\\"B\\",\\"with\\":[1,2,3]},\\"ref1\\":{\\"arr\\":[\\"the A:\\",{\\"thisIs\\":\\"A\\"},\\"and the B\\",{\\"and this is\\":\\"B\\",\\"with\\":[1,2,3]}],\\"arr2\\":[\\"the A:\\",{\\"thisIs\\":\\"A\\"},\\"and the B\\",{\\"and this is\\":\\"B\\",\\"with\\":[1,2,3]}],\\"arr3\\":[\\"the A:\\",{\\"thisIs\\":\\"A\\"},\\"and the B\\",{\\"and this is\\":\\"B\\",\\"with\\":[1,2,3]}]}}}}"`,
-    );
+    expect(ts`${ts.val(obj2)}`.toString().trim()).toMatchSnapshot();
   });
 
   it('should reuse same object used twice', () => {
     const code = ts`
+    ${ts.val(a, { name: 'a', isExport: true })}
     [${ts.val(a)}, ${ts.val(a)}]
     `;
-    expect(
+    expect(code.toString()).toMatchInlineSnapshot(`
+      "const a = a;
+
+      a
+      [a, a]
+      "
+    `);
   });
 });
