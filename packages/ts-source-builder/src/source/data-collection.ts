@@ -57,11 +57,6 @@ export class DataCollection {
     const code: string[] = [];
     for (const [value, ref] of this.refs) {
       if (ref && ref.exportNames.length) {
-        for (const child of ref.children) {
-          if (child.seen > 1) {
-            this.getCodeForRef(child, child.data, code);
-          }
-        }
         this.getCodeForRef(ref, value, code);
       }
     }
@@ -74,8 +69,15 @@ export class DataCollection {
     return `$$${(this.id++).toString(36)}`;
   }
 
-  private getCodeForRef(ref: DataRef, value: unknown, code: string[]) {
+  private getCodeForRef(ref: DataRef, value: unknown, code: string[], onlyChildren?: boolean) {
     if (ref.writtenName) return;
+
+    for (const child of ref.children) {
+      this.getCodeForRef(child, child.data, code, true);
+    }
+
+    if (onlyChildren && ref.seen < 2) return;
+
     const firstName = ref.exportNames[0] || this.getFreeId();
 
     ref.isWriting = true;
@@ -125,7 +127,11 @@ export class DataCollection {
           if (ref.writtenName) {
             if (ref.isWriting) {
               append.push(`${path} = ${ref.writtenName}`);
-              return `undefined /* recursive ${ref.writtenName} */`;
+              if (Array.isArray(ref.data)) {
+                return `[ /* recursive ${ref.writtenName} */ ]`;
+              } else {
+                return `{ /* recursive ${ref.writtenName} */ }`;
+              }
             } else {
               return ref.writtenName;
             }
