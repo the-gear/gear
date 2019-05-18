@@ -1,40 +1,54 @@
 import { isPrimitiveValue, getPropertyName, getPropertyAccess } from './utils';
+import { Identifier, IdentifierOptions } from './identifier';
+import { SourceModule } from './source-module';
 
 export type DataRefConfig = {
   data: unknown;
-  exportNames: string[];
+  identifiers: Identifier[];
   seen: number;
 };
 
 export class DataRef implements DataRefConfig {
   data: unknown;
-  exportNames: string[] = [];
+  identifiers: Identifier[] = [];
   writtenName?: string;
   isWriting: boolean = false;
   seen: number = 1;
   children = new Set<DataRef>();
-  constructor(data: unknown, name?: string) {
+
+  constructor(data: unknown, ident?: IdentifierOptions) {
     this.data = data;
-    if (name) {
-      this.exportNames.push(name);
+    if (ident) {
+      this.identifiers.push(new Identifier(ident));
     }
+  }
+
+  getIdentifier(): Identifier {
+    if (this.identifiers.length) {
+      return this.identifiers[0];
+    }
+    const id = new Identifier();
+    this.identifiers.push(id);
+    return id;
   }
 }
 
 export class DataCollection {
   private refs = new Map<unknown, DataRef | null>();
 
-  public add(data: unknown, name?: string, children?: Set<DataRef>): DataRef {
+  constructor(private modul: SourceModule = new SourceModule()) {}
+
+  public add(data: unknown, ident?: IdentifierOptions, children?: Set<DataRef>): DataRef {
     let ref = this.refs.get(data);
     if (ref) {
       ref.seen++;
-      if (name) {
-        ref.exportNames.push(name);
+      if (ident) {
+        ref.identifiers.push(new Identifier(ident));
       }
 
       return ref;
     } else {
-      ref = new DataRef(data, name);
+      ref = new DataRef(data, ident);
       this.refs.set(data, ref);
     }
     if (children) children.add(ref);
@@ -56,7 +70,7 @@ export class DataCollection {
   public getTsCode() {
     const code: string[] = [];
     for (const [value, ref] of this.refs) {
-      if (ref && ref.exportNames.length) {
+      if (ref && ref.identifiers.length) {
         this.getCodeForRef(ref, value, code);
       }
     }
@@ -73,15 +87,9 @@ export class DataCollection {
     return `$$${(this.id++).toString(36)}`;
   }
 
-  public getQualifiedId(data: unknown): string {
+  public getDataRef(data: unknown): DataRef {
     let dataRef = this.refs.get(data);
-    if (dataRef) {
-      if (dataRef.exportNames.length) return dataRef.exportNames[0];
-      if (dataRef.writtenName) return dataRef.writtenName;
-    }
-    const id = this.getFreeId();
-    dataRef = this.add(data, id);
-    return id;
+    return dataRef ? dataRef : this.add(data);
   }
 
   private getCodeForRef(ref: DataRef, value: unknown, code: string[], onlyChildren?: boolean) {
@@ -94,24 +102,29 @@ export class DataCollection {
 
     if (onlyChildren && ref.seen < 2) return;
 
-    const firstName = ref.exportNames[0] || this.getFreeId();
+    const firstIdent = ref.getIdentifier();
+    const firstName = firstIdent.getSource(this.modul);
 
     const append: string[] = [];
     const serialized = this.serialize(value, firstName, append);
     const isPrimitive = isPrimitiveValue(value);
-    const exportStr = ref.exportNames.length ? 'export ' : '';
     if (isPrimitive) {
-      for (let i = 0; i < ref.exportNames.length; i++) {
-        const name = ref.exportNames[i];
+      for (let i = 0; i < ref.identifiers.length; i++) {
+        const ident = ref.identifiers[i];
+        const name = ident.getSource(this.modul);
+        const exportStr = ident.isExported ? 'export ' : '';
         code.push(`${exportStr}const ${name} = ${serialized};`);
       }
     } else {
+      const exportStr = firstIdent.isExported ? 'export ' : '';
       code.push(`${exportStr}const ${firstName} = ${serialized};`);
       if (append.length) {
         code.push(append.join('\n'));
       }
-      for (let i = 1; i < ref.exportNames.length; i++) {
-        const name = ref.exportNames[i];
+      for (let i = 1; i < ref.identifiers.length; i++) {
+        const ident = ref.identifiers[i];
+        const name = ident.getSource(this.modul);
+        const exportStr = ident.isExported ? 'export ' : '';
         code.push(`${exportStr}const ${name} = ${firstName};`);
       }
     }

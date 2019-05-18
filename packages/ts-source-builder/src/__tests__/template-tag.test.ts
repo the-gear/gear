@@ -56,7 +56,7 @@ describe('`ts` template tag', () => {
           mineId$1, mineId$2, mineId,
           mineId$1, mineId$2, mineId,
         ];
-        const gen$ = gen$$1"
+        const $ = $$1"
     `);
   });
 
@@ -66,13 +66,13 @@ describe('`ts` template tag', () => {
       ${ts.import('util', null, 'util')}.inspect();
     `;
     expect(src.toString()).toMatchInlineSnapshot(`
-      "import { b as c } from \\"a\\";
-      import util from \\"util\\";
+                  "import { b as c } from \\"a\\";
+                  import util from \\"util\\";
 
-        c.inspect();
-        util.inspect();
-      "
-    `);
+                    c.inspect();
+                    util.inspect();
+                  "
+            `);
   });
 
   it('should import identifiers properly 2', () => {
@@ -84,14 +84,14 @@ describe('`ts` template tag', () => {
     ${ts.import('util', 'debuglog')}('test');
     `;
     expect(src.toString()).toMatchInlineSnapshot(`
-      "import util, { debuglog } from \\"util\\";
+                  "import util, { debuglog } from \\"util\\";
 
-      util.inspect();
-      util.inspect();
-      util.inspect();
-      util.inspect();
-      debuglog('test');
-      "
-    `);
+                  util.inspect();
+                  util.inspect();
+                  util.inspect();
+                  util.inspect();
+                  debuglog('test');
+                  "
+            `);
   });
 });

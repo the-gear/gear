@@ -36,7 +36,7 @@ export class SourceModule {
   constructor(moduleName?: string, codeBlocks: SourceCollection = new SourceCollection([])) {
     this.moduleName = moduleName;
     this.codeBlocks = codeBlocks;
-    this.data = new DataCollection();
+    this.data = new DataCollection(this);
     this.data.getFreeId = (name?: string) => this.getFreeIdentifier(name || '$d');
   }
 
@@ -127,7 +127,7 @@ export class SourceModule {
     return name;
   }
 
-  getFreeIdentifier(ident: string = 'gen$'): string {
+  getFreeIdentifier(ident: string = '$'): string {
     let nameBase = ident;
     let freeIdent = nameBase;
     let i = 0;

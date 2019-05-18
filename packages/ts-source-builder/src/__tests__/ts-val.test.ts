@@ -19,13 +19,13 @@ describe('ts.val', () => {
       return ${ts.val(a, 'a')};
       `.toString(),
     ).toMatchInlineSnapshot(`
-      "/* #region Data */
-      export const a = {thisIs: \\"A\\"};
-      /* #endregion Data */
+                  "/* #region Data */
+                  const a = {thisIs: \\"A\\"};
+                  /* #endregion Data */
 
-      return a;
-      "
-    `);
+                  return a;
+                  "
+            `);
   });
 
   it('should serialize nested objects', () => {
@@ -34,17 +34,21 @@ describe('ts.val', () => {
       return ${ts.val(obj2)};
       `.toString(),
     ).toMatchInlineSnapshot(`
-            "/* #region Data */
-            const $d$2 = {thisIs: \\"A\\"};
-            const $d$4 = {\\"and this is\\": \\"B\\", with: [1, 2, 3]};
-            const $d$5 = [\\"the A:\\", $d$2, \\"and the B\\", $d$4];
-            const $d$6 = {arr: $d$5, arr2: $d$5, arr3: [\\"the A:\\", $d$2, \\"and the B\\", $d$4]};
-            export const $d = {a: {int123: 123, obj1: $d$6, nested: {a: $d$2, b: $d$4, ref1: $d$6}}};
-            /* #endregion Data */
+      "/* #region Data */
+      const $$2 = \\"the A:\\";
+      const $$3 = {thisIs: \\"A\\"};
+      const $$5 = \\"and the B\\";
+      const $$6 = {\\"and this is\\": \\"B\\", with: [1, 2, 3]};
+      const $$7 = [\\"the A:\\", $$3, \\"and the B\\", $$6];
+      const $$8 = {arr: $$7, arr2: $$7, arr3: [\\"the A:\\", $$3, \\"and the B\\", $$6]};
+      const $$9 = {a: {int123: 123, obj1: $$8, nested: {a: $$3, b: $$6, ref1: $$8}}};
+      const $$b = \\"the A:\\";
+      const $$d = \\"and the B\\";
+      /* #endregion Data */
 
-            return $d;
-            "
-        `);
+      return $;
+      "
+    `);
   });
 
   it('should reuse same object used twice', () => {
@@ -55,16 +59,16 @@ describe('ts.val', () => {
     ]
     `;
     expect(code.toString()).toMatchInlineSnapshot(`
-                        "/* #region Data */
-                        export const a = {thisIs: \\"A\\"};
-                        export const arr = [a, {\\"and this is\\": \\"B\\", with: [1, 2, 3]}];
-                        /* #endregion Data */
+                  "/* #region Data */
+                  const a = {thisIs: \\"A\\"};
+                  const arr = [a, {\\"and this is\\": \\"B\\", with: [1, 2, 3]}];
+                  /* #endregion Data */
 
-                        return [
-                          a,
-                          arr
-                        ]
-                        "
-                `);
+                  return [
+                    a,
+                    arr
+                  ]
+                  "
+            `);
   });
 });

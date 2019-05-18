@@ -17,13 +17,13 @@ describe('DataCollection', () => {
     collection.add(false, 'falseVal');
     collection.add(BigInt('123456789012345678901234567890'), 'bigInt');
     expect(collection.getTsCode().split('\n')).toEqual([
-      'export const numVal = 1;',
-      'export const strVal = "string";',
-      'export const nullVal = null;',
-      'export const undefinedVal = undefined;',
-      'export const trueVal = true;',
-      'export const falseVal = false;',
-      'export const bigInt = BigInt("123456789012345678901234567890");',
+      'const numVal = 1;',
+      'const strVal = "string";',
+      'const nullVal = null;',
+      'const undefinedVal = undefined;',
+      'const trueVal = true;',
+      'const falseVal = false;',
+      'const bigInt = BigInt("123456789012345678901234567890");',
     ]);
   });
 
@@ -32,25 +32,25 @@ describe('DataCollection', () => {
     collection.add(() => {}, 'fnVal');
     collection.add(Symbol('custom'), 'symbolVal');
     expect(collection.getTsCode().split('\n')).toEqual([
-      'export const fnVal = undefined /* () => { } */;',
-      'export const symbolVal = undefined /* Symbol(custom) */;',
+      'const fnVal = undefined /* () => { } */;',
+      'const symbolVal = undefined /* Symbol(custom) */;',
     ]);
   });
 
   it('can write object with various keys', () => {
     const data = {
+      37: 73,
       number: 1,
       string: 'string',
       null: null,
-      undefined: undefined,
       true: true,
       false: false,
-      74: 47,
+      undefined: undefined,
     };
     const collection = new DataCollection();
     collection.add(data, 'data');
     expect(collection.getTsCode()).toEqual(
-      `export const data = {"74": 47, number: 1, string: "string", null: null, undefined: undefined, true: true, false: false};`,
+      `const data = {"37": 73, number: 1, string: "string", null: null, true: true, false: false, undefined: undefined};`,
     );
   });
 
@@ -59,7 +59,7 @@ describe('DataCollection', () => {
     const collection = new DataCollection();
     collection.add(arr, 'arr');
     expect(collection.getTsCode()).toEqual(
-      `export const arr = [1, "string", null, undefined, true, false];`,
+      `const arr = [1, "string", null, undefined, true, false];`,
     );
   });
 });

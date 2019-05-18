@@ -38,7 +38,10 @@ export class ConstData extends SourceAtom implements ConstDataConfig {
 
   resolve(modul: SourceModule) {
     if (!this.name) {
-      this.name = modul.data.getQualifiedId(this.data);
+      this.name = modul.data
+        .getDataRef(this.data)
+        .getIdentifier()
+        .getSource(modul);
     }
   }
 
