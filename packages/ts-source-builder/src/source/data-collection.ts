@@ -1,12 +1,12 @@
 import { isPrimitiveValue, getPropertyName, getPropertyAccess } from './utils';
 
-type DataRefConfig = {
+export type DataRefConfig = {
   data: unknown;
   exportNames: string[];
   seen: number;
 };
 
-class DataRef implements DataRefConfig {
+export class DataRef implements DataRefConfig {
   data: unknown;
   exportNames: string[] = [];
   writtenName?: string;
@@ -24,14 +24,15 @@ class DataRef implements DataRefConfig {
 export class DataCollection {
   private refs = new Map<unknown, DataRef | null>();
 
-  public add(data: unknown, name?: string, children?: Set<DataRef>) {
+  public add(data: unknown, name?: string, children?: Set<DataRef>): DataRef {
     let ref = this.refs.get(data);
     if (ref) {
       ref.seen++;
       if (name) {
         ref.exportNames.push(name);
       }
-      return;
+
+      return ref;
     } else {
       ref = new DataRef(data, name);
       this.refs.set(data, ref);
@@ -48,6 +49,8 @@ export class DataCollection {
         Object.values(data).forEach(addRecursive);
       }
     }
+
+    return ref;
   }
 
   public getTsCode() {
@@ -66,13 +69,14 @@ export class DataCollection {
   }
 
   private id: number = 1;
-  public getId() {
+
+  public getFreeId() {
     return `$$${(this.id++).toString(36)}`;
   }
 
   private getCodeForRef(ref: DataRef, value: unknown, code: string[]) {
     if (ref.writtenName) return;
-    const firstName = ref.exportNames[0] || this.getId();
+    const firstName = ref.exportNames[0] || this.getFreeId();
 
     ref.isWriting = true;
     const append: string[] = [];
