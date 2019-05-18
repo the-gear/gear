@@ -72,6 +72,7 @@ export class DataCollection {
   private getCodeForRef(ref: DataRef, value: unknown, code: string[], onlyChildren?: boolean) {
     if (ref.writtenName) return;
 
+    ref.isWriting = true;
     for (const child of ref.children) {
       this.getCodeForRef(child, child.data, code, true);
     }
@@ -80,7 +81,6 @@ export class DataCollection {
 
     const firstName = ref.exportNames[0] || this.getFreeId();
 
-    ref.isWriting = true;
     const append: string[] = [];
     const serialized = this.serialize(value, firstName, append);
     const isPrimitive = isPrimitiveValue(value);
