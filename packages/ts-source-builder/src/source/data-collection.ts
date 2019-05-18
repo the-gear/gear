@@ -23,11 +23,12 @@ export class DataRef implements DataRefConfig {
     }
   }
 
-  getIdentifier(): Identifier {
+  getIdentifier(ident?: IdentifierOptions): Identifier {
     if (this.identifiers.length) {
+      console.log('IDENTIFIERS:', this.identifiers.map((id) => id.name));
       return this.identifiers[0];
     }
-    const id = new Identifier();
+    const id = new Identifier(ident);
     this.identifiers.push(id);
     return id;
   }
