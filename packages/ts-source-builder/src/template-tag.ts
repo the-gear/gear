@@ -73,10 +73,10 @@ export function ts(
   return new SourceCollection(fragments);
 }
 
-export function value(data: any, config?: ConstDataConfigWithoutData): ConstData {
+export function value(data: any, config?: ConstDataConfigWithoutData | string): ConstData {
   // return new RawSource(JSON.stringify(val));
   return new ConstData({
-    ...config,
+    ...(typeof config === 'string' ? { name: config } : config || {}),
     data,
   });
 }

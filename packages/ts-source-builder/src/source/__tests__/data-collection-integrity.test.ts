@@ -1,10 +1,5 @@
 import { DataCollection } from '../data-collection';
 
-expect.addSnapshotSerializer({
-  test: (val) => val.getTsCode,
-  print: (val) => val.getTsCode(),
-});
-
 const a = { thisIs: 'A' };
 const b = { 'and this is': 'B', with: [1, 2, 3] };
 const arr = ['the A:', a, 'and the B', b];
@@ -33,10 +28,10 @@ describe('DataCollection should preserve referential integrity', () => {
     collection.add(o2, 'o2');
     collection.add(arr, 'arr');
     expect(collection).toMatchInlineSnapshot(`
-            export const o1 = {};
-            export const o2 = {};
-            export const arr = [1, o1, 2, o2];
-        `);
+      export const o1 = {};
+      export const o2 = {};
+      export const arr = [1, o1, 2, o2];
+    `);
   });
 
   it('order reversed', () => {
@@ -80,17 +75,17 @@ describe('DataCollection should preserve referential integrity', () => {
     collection.add(arr, 'arr2');
     collection.add([...arr], 'arr3');
     expect(collection).toMatchInlineSnapshot(`
-      const $$1 = {id: 2, o1: {id: 1, o1: { /* recursive $$1.o1 */ }, o3: {id: 3, o2: { /* recursive $$1 */ }}}};
-      $$1.o1.o1 = $$1.o1;
-      $$1.o1.o3.o2 = $$1;
-      const $$2 = { /* recursive $$1.o1.o3 */ };
-      $$2 = $$1.o1.o3;
-      const $$3 = { /* recursive $$1.o1 */ };
-      $$3 = $$1.o1;
-      export const arr1 = [$$1.o1, $$1, $$1.o1.o3];
-      export const arr2 = arr1;
-      export const arr3 = [$$1.o1, $$1, $$1.o1.o3];
-    `);
+            const $$1 = {id: 2, o1: {id: 1, o1: { /* recursive $$1.o1 */ }, o3: {id: 3, o2: { /* recursive $$1 */ }}}};
+            $$1.o1.o1 = $$1.o1;
+            $$1.o1.o3.o2 = $$1;
+            const $$2 = { /* recursive $$1.o1.o3 */ };
+            $$2 = $$1.o1.o3;
+            const $$3 = { /* recursive $$1.o1 */ };
+            $$3 = $$1.o1;
+            export const arr1 = [$$1.o1, $$1, $$1.o1.o3];
+            export const arr2 = arr1;
+            export const arr3 = [$$1.o1, $$1, $$1.o1.o3];
+        `);
   });
 
   it('nested', () => {

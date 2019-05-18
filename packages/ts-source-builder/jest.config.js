@@ -3,4 +3,5 @@ const package = require('./package.json');
 
 module.exports = {
   ...base(package),
+  snapshotSerializers: ['./jest-serializer'],
 };

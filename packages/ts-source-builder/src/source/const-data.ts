@@ -1,6 +1,5 @@
 import { SourceAtom } from './source-atom';
 import { SourceModule } from './source-module';
-import { DataRef } from './data-collection';
 
 export type ConstDataConfigWithoutData = {
   /**
@@ -24,7 +23,6 @@ export class ConstData extends SourceAtom implements ConstDataConfig {
   name?: string;
   isExport?: boolean;
   data: any;
-  ref?: DataRef;
 
   constructor(config: ConstDataConfig) {
     super();
@@ -34,12 +32,21 @@ export class ConstData extends SourceAtom implements ConstDataConfig {
   }
 
   collect(modul: SourceModule) {
-    this.ref = modul.data.add(this.data, this.name);
+    const name = this.name;
+    modul.data.add(this.data, name);
   }
 
-  resolve(_modul: SourceModule) {}
+  resolve(modul: SourceModule) {
+    if (!this.name) {
+      this.name = modul.data.getQualifiedId(this.data);
+    }
+  }
 
   getSource(_modul: SourceModule) {
-    return (this.ref as DataRef).writtenName || this.name || '';
+    /* istanbul ignore next */
+    if (!this.name) {
+      throw new Error('data have no name');
+    }
+    return this.name;
   }
 }

@@ -16,11 +16,14 @@ describe('ts.val', () => {
   it('should serialize simple object', () => {
     expect(
       ts`
-      return ${ts.val(a)};
+      return ${ts.val(a, 'a')};
       `.toString(),
     ).toMatchInlineSnapshot(`
-      "
-      return ;
+      "/* #region Data */
+      export const a = {thisIs: \\"A\\"};
+      /* #endregion Data */
+
+      return a;
       "
     `);
   });
@@ -31,10 +34,17 @@ describe('ts.val', () => {
       return ${ts.val(obj2)};
       `.toString(),
     ).toMatchInlineSnapshot(`
-      "
-      return ;
-      "
-    `);
+            "/* #region Data */
+            const $d$2 = {thisIs: \\"A\\"};
+            const $d$4 = {\\"and this is\\": \\"B\\", with: [1, 2, 3]};
+            const $d$5 = [\\"the A:\\", $d$2, \\"and the B\\", $d$4];
+            const $d$6 = {arr: $d$5, arr2: $d$5, arr3: [\\"the A:\\", $d$2, \\"and the B\\", $d$4]};
+            export const $d = {a: {int123: 123, obj1: $d$6, nested: {a: $d$2, b: $d$4, ref1: $d$6}}};
+            /* #endregion Data */
+
+            return $d;
+            "
+        `);
   });
 
   it('should reuse same object used twice', () => {
@@ -45,16 +55,16 @@ describe('ts.val', () => {
     ]
     `;
     expect(code.toString()).toMatchInlineSnapshot(`
-      "/* #region Data */
-      export const a = {thisIs: \\"A\\"};
-      export const arr = [a, {\\"and this is\\": \\"B\\", with: [1, 2, 3]}];
-      /* #endregion Data */
+                        "/* #region Data */
+                        export const a = {thisIs: \\"A\\"};
+                        export const arr = [a, {\\"and this is\\": \\"B\\", with: [1, 2, 3]}];
+                        /* #endregion Data */
 
-      return [
-        a,
-        arr
-      ]
-      "
-    `);
+                        return [
+                          a,
+                          arr
+                        ]
+                        "
+                `);
   });
 });

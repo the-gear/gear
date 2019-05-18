@@ -63,10 +63,25 @@ export class DataCollection {
     return code.join('\n');
   }
 
+  public toString() {
+    return this.getTsCode();
+  }
+
   private id: number = 1;
 
   public getFreeId() {
     return `$$${(this.id++).toString(36)}`;
+  }
+
+  public getQualifiedId(data: unknown): string {
+    let dataRef = this.refs.get(data);
+    if (dataRef) {
+      if (dataRef.exportNames.length) return dataRef.exportNames[0];
+      if (dataRef.writtenName) return dataRef.writtenName;
+    }
+    const id = this.getFreeId();
+    dataRef = this.add(data, id);
+    return id;
   }
 
   private getCodeForRef(ref: DataRef, value: unknown, code: string[], onlyChildren?: boolean) {
