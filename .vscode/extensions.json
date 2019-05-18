@@ -8,7 +8,8 @@
     "ms-vscode.vscode-typescript-tslint-plugin",
     "esbenp.prettier-vscode",
     "codezombiech.gitignore",
-    "EditorConfig.EditorConfig"
+    "EditorConfig.EditorConfig",
+    "maptz.regionfolder"
   ],
   // List of unwanted extensions for this workspace:
   "unwantedRecommendations": ["eg2.tslint"]

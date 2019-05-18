@@ -126,7 +126,7 @@ export class DataCollection {
         if (ref) {
           if (ref.writtenName) {
             if (ref.isWriting) {
-              append.push(`${path} = ${ref.writtenName}`);
+              append.push(`${path} = ${ref.writtenName};`);
               if (Array.isArray(ref.data)) {
                 return `[ /* recursive ${ref.writtenName} */ ]`;
               } else {

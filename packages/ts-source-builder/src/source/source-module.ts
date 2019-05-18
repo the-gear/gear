@@ -31,11 +31,13 @@ export class SourceModule {
 
   private sources: Set<TsSource> = new Set();
 
-  public data = new DataCollection();
+  public data: DataCollection;
 
   constructor(moduleName?: string, codeBlocks: SourceCollection = new SourceCollection([])) {
     this.moduleName = moduleName;
     this.codeBlocks = codeBlocks;
+    this.data = new DataCollection();
+    this.data.getFreeId = (name?: string) => this.getFreeIdentifier(name || '$d');
   }
 
   invalidate() {}
@@ -108,7 +110,11 @@ export class SourceModule {
     const data = this.data.getTsCode();
     const imports = this.getImportTsSource();
     if (imports) result.push(imports);
-    if (data) result.push(data);
+    if (data) {
+      result.push('/* #region Data */');
+      result.push(data);
+      result.push('/* #endregion Data */');
+    }
     result.push(srcBody);
     return result.join('\n');
   }
