@@ -1,0 +1,35 @@
+{
+  "name": "@the-gear/ts-source-writer",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Generate TypeScript Source programmatically",
+  "author": "Pavel Lang <langpavel@phpskelet.org>",
+  "homepage": "https://github.com/the-gear/gear#readme",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "directories": {
+    "dist": "dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/the-gear/gear"
+  },
+  "peerDependencies": {
+    "typescript": "^3.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^12.0.0",
+    "jest": "^24.8.0",
+    "ts-jest": "^24.0.2",
+    "typescript": "^3.4.5"
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "tsc --clean",
+    "dev": "yarn watch",
+    "test": "jest",
+    "watch": "tsc --watch"
+  }
+}
