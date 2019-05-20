@@ -2,17 +2,16 @@ import { TsSource, isTsSource } from './ts-source';
 import { isPrimitiveValue, isWithKeys } from './utils';
 
 class Ref {
-  parent: Ref | null;
-  count = 0;
-  isRecursive: boolean = false;
+  parents = new Set<Ref>();
   suggestedNames = new Map<string, number>();
+  isRecursive: boolean = false;
 
-  constructor(parent: Ref | null) {
-    this.parent = parent;
+  addParent(parent: Ref) {
+    this.parents.add(parent);
+    return this;
   }
 
-  inc(suggestedNames?: string[]) {
-    this.count++;
+  suggestNames(suggestedNames: string[]) {
     if (suggestedNames) {
       suggestedNames.forEach((name) => this.suggestName(name));
     }
@@ -23,13 +22,14 @@ class Ref {
   }
 
   refCount(): number {
-    return this.count - (this.parent ? this.parent.count : 1);
+    return this.parents.size;
   }
 }
 
 export class SourceWriter {
   private source: string[] = [];
   private refs = new Map<unknown, Ref>();
+  private suggestedRefNames = new Map<string, Set<Ref>>();
   private identifiers = new Set<string>();
 
   resolve(source: TsSource): this {
@@ -71,6 +71,15 @@ export class SourceWriter {
     if (!this.tryIdentifier(name)) throw new Error(`Identifier ${name} is already taken`);
   }
 
+  private suggestRefName(name: string, ref: Ref) {
+    let refSet = this.suggestedRefNames.get(name);
+    if (!refSet) {
+      refSet = new Set();
+      this.suggestedRefNames.set(name, refSet);
+    }
+    refSet.add(ref);
+  }
+
   private addRefRecursive(
     data: unknown,
     suggestedNames: string[],
@@ -84,11 +93,13 @@ export class SourceWriter {
     }
     if (!ref) {
       if (isPrimitiveValue(data)) return;
-      ref = new Ref(parent);
+      ref = new Ref();
       this.refs.set(data, ref);
     }
     seen.add(data);
-    ref.inc(suggestedNames);
+    if (parent) ref.addParent(parent);
+    ref.suggestNames(suggestedNames);
+    suggestedNames.forEach((name) => this.suggestRefName(name, ref));
 
     if (isWithKeys(data)) {
       for (const [key, value] of Object.entries(data)) {
@@ -113,7 +124,7 @@ export class SourceWriter {
       return this;
     }
     source.push(
-      `/* c:${ref.refCount()} [${[...ref.suggestedNames.entries()]
+      `/* ${ref.refCount()}× [${[...ref.suggestedNames.entries()]
         .map(([k, v]) => `${k}: ${v}`)
         .join(', ')}] */`,
     );
@@ -122,7 +133,7 @@ export class SourceWriter {
 
   private writeRefs(source: string[] = this.source) {
     for (const [data, ref] of this.refs.entries()) {
-      if (ref.count > 0 || ref.isRecursive) {
+      if (ref.refCount() > 0 || ref.isRecursive) {
         this.writeRef(data, source, ref);
       }
     }

@@ -10,12 +10,12 @@ expect.addSnapshotSerializer({
 const valEval = (x: unknown) => runInNewContext(value(x).toString());
 
 describe('value', () => {
-  // it('can serialize empty object', () => {
-  //   const emptyObject = {};
-  //   const emptyObjectValue = value(emptyObject);
-  //   expect(emptyObjectValue).toMatchInlineSnapshot(`/* c:1 [] *//* c:1 [] */`);
-  //   expect(valEval(emptyObjectValue)).toEqual(emptyObject);
-  // });
+  it('can serialize empty object', () => {
+    const emptyObject = {};
+    const emptyObjectValue = value(emptyObject);
+    expect(emptyObjectValue).toMatchInlineSnapshot(`/* 0× [] */`);
+    expect(valEval(emptyObjectValue)).toEqual(emptyObject);
+  });
 
   it('can serialize nested object', () => {
     const nestedChild = {};
@@ -27,7 +27,7 @@ describe('value', () => {
     };
     const nestedObjectValue = value(nestedObject);
     expect(nestedObjectValue).toMatchInlineSnapshot(
-      `/* c:0 [] *//* c:2 [child: 1, child2: 1, child3: 1] *//* c:0 [nestedChild: 3, child$nestedChild: 1, child2$nestedChild: 1, child3$nestedChild: 1] *//* c:0 [] */`,
+      `/* 1× [child: 1, child2: 1, child3: 1] *//* 1× [nestedChild: 3, child$nestedChild: 1, child2$nestedChild: 1, child3$nestedChild: 1] *//* 0× [] */`,
     );
     expect(valEval(nestedObjectValue)).toEqual(nestedObject);
   });
@@ -41,7 +41,7 @@ describe('value', () => {
       null: null,
     };
     const simpleObjectValue = value(simpleObject);
-    expect(simpleObjectValue).toMatchInlineSnapshot(`/* c:0 [] *//* c:0 [] */`);
+    expect(simpleObjectValue).toMatchInlineSnapshot(`/* 0× [] */`);
     expect(valEval(simpleObjectValue)).toEqual(simpleObject);
   });
 });
