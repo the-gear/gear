@@ -38,7 +38,7 @@ export class SourceWriter {
   }
 
   write(strOrTsSource: string | TsSource): this {
-    this.writeRefs();
+    this.writeRefs(this.source);
     if (typeof strOrTsSource === 'string') {
       this.source.push(strOrTsSource);
     } else if (isTsSource(strOrTsSource) && strOrTsSource.write) {
@@ -82,7 +82,31 @@ export class SourceWriter {
         this.addRefRecursive(value, newSuggestedNames, ref, seen);
       }
     }
+    seen.delete(data);
   }
 
-  private writeRefs() {}
+  writeRef(
+    data: unknown,
+    source: string[] = this.source,
+    ref: Ref | undefined = this.refs.get(data),
+  ): this {
+    if (!ref) {
+      source.push(`/* ??? ${typeof data} */`);
+      return this;
+    }
+    source.push(
+      `/* c:${ref.count} [${[...ref.suggestedNames.entries()]
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(', ')}] */`,
+    );
+    return this;
+  }
+
+  private writeRefs(source: string[] = this.source) {
+    for (const [data, ref] of this.refs.entries()) {
+      if (ref.count > 0 || ref.isRecursive) {
+        this.writeRef(data, source, ref);
+      }
+    }
+  }
 }

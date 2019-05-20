@@ -11,7 +11,7 @@ export class ObjectValue extends SourceFragment {
   }
 
   write(writer: SourceWriter) {
-    writer.write('({})');
+    writer.writeRef(this.ref);
   }
 
   static readonly null = new RawSource('null');

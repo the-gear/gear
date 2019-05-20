@@ -80,7 +80,8 @@ export function identifier(options?: IdentifierOptions): Identifier {
 // }
 
 /**
- * Emit `const` _name_ `=` _value_
+ * Emit `const` _name_ `=` _value_ `;`
+ *
  * reserve _name_ as identifier
  */
 export function constVal(name: string, value: unknown): SourceFragments {
@@ -89,7 +90,7 @@ export function constVal(name: string, value: unknown): SourceFragments {
 }
 
 /**
- * Emit `export const` _name_ `=` _value_
+ * Emit `export const` _name_ `=` _value_ `;`
  * reserve _name_ as identifier
  */
 export function exportVal(name: string, value: unknown): SourceFragments {
