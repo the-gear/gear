@@ -6,6 +6,12 @@ export function isSource(value: any): value is Source {
   return value && value[__Source];
 }
 
+export function assertSource(value: Source): void;
+export function assertSource(value: any): never;
+export function assertSource(value: any) {
+  if (!isSource(value)) throw new Error('Assertion failed');
+}
+
 export interface Source {
   readonly [__Source]: true;
   readonly dependencies?: ReadonlyArray<Source>;
@@ -34,6 +40,7 @@ export class SourceFragments extends SourceFragment {
 
   resolve(resolver: SourceResolver) {
     this.dependencies.forEach((dep) => dep.resolve && dep.resolve(resolver));
+    return this;
   }
 
   write(resolver: SourceResolver) {
@@ -47,7 +54,7 @@ export class RawSource extends SourceFragment {
   }
 
   write(resolver: SourceResolver) {
-    resolver.write(this.source);
+    resolver.writeCode(this.source);
   }
 
   toString(): string {

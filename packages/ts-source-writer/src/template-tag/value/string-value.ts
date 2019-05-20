@@ -6,6 +6,10 @@ export class StringValue extends SourceFragment {
     super();
   }
 
+  // resolve(resolver: SourceResolver) {
+  //   resolver.addRef(this.ref);
+  // }
+
   write(resolver: SourceResolver) {
     resolver.writeString(this.ref);
   }

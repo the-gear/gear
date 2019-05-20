@@ -2,7 +2,7 @@ import { SourceFragment, RawSource } from '../source';
 import { SourceResolver } from '../source-resolver';
 
 export class ObjectValue extends SourceFragment {
-  constructor(public ref: object) {
+  constructor(public ref: {}) {
     super();
   }
 
@@ -11,7 +11,7 @@ export class ObjectValue extends SourceFragment {
   }
 
   write(resolver: SourceResolver) {
-    resolver.writeRef(this.ref);
+    resolver.writeObject(this.ref);
   }
 
   static readonly null = new RawSource('null');

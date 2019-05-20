@@ -13,7 +13,7 @@ describe('value', () => {
   it('can serialize empty object', () => {
     const emptyObject = {};
     const emptyObjectValue = value(emptyObject);
-    expect(emptyObjectValue).toMatchInlineSnapshot(`/* 0× [] */`);
+    expect(emptyObjectValue).toMatchInlineSnapshot(`{}`);
     expect(valEval(emptyObjectValue)).toEqual(emptyObject);
   });
 
@@ -26,16 +26,9 @@ describe('value', () => {
       child3: child,
     };
     const nestedObjectValue = value(nestedObject);
-    expect(nestedObjectValue).toMatchInlineSnapshot(`
-      /* #region hoisted definitions */
-
-      // 1× [child: 1, child2: 1, child3: 1]
-      const child = null; // TODO
-      // 1× [nestedChild: 3, child$nestedChild: 1, child2$nestedChild: 1, child3$nestedChild: 1]
-      const nestedChild = null; // TODO
-      /* #endregion hoisted definitions */
-      /* 0× [] */
-    `);
+    expect(nestedObjectValue).toMatchInlineSnapshot(
+      `{"child":{"nestedChild":{}},"child2":{"nestedChild":{}},"child3":{"nestedChild":{}}}`,
+    );
     expect(valEval(nestedObjectValue)).toEqual(nestedObject);
   });
 
@@ -48,7 +41,7 @@ describe('value', () => {
       null: null,
     };
     const simpleObjectValue = value(simpleObject);
-    expect(simpleObjectValue).toMatchInlineSnapshot(`/* 0× [] */`);
+    expect(simpleObjectValue).toMatchInlineSnapshot();
     expect(valEval(simpleObjectValue)).toEqual(simpleObject);
   });
 });
