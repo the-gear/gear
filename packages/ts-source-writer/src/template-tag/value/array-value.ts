@@ -1,4 +1,4 @@
-import { SourceFragment } from '../ts-source';
+import { SourceFragment } from '../source';
 
 export class ArrayValue extends SourceFragment {
   constructor(public ref: unknown[]) {

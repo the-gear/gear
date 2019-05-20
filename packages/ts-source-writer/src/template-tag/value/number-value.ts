@@ -1,4 +1,4 @@
-import { SourceFragment } from '../ts-source';
+import { SourceFragment } from '../source';
 import { SourceResolver } from '../source-resolver';
 
 export class NumberValue extends SourceFragment {

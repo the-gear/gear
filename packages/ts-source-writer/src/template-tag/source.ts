@@ -1,20 +1,20 @@
 import { SourceResolver } from './source-resolver';
 
-export const __tsSource = Symbol();
+export const __Source = Symbol();
 
-export function isTsSource(value: any): value is TsSource {
-  return value && value[__tsSource];
+export function isSource(value: any): value is Source {
+  return value && value[__Source];
 }
 
-export interface TsSource {
-  readonly [__tsSource]: true;
-  readonly dependencies?: ReadonlyArray<TsSource>;
+export interface Source {
+  readonly [__Source]: true;
+  readonly dependencies?: ReadonlyArray<Source>;
   resolve?: (resolver: SourceResolver) => void;
   write?: (resolver: SourceResolver) => void;
 }
 
-export class SourceFragment implements TsSource {
-  readonly [__tsSource] = true;
+export class SourceFragment implements Source {
+  readonly [__Source] = true;
 
   toString(): string {
     return new SourceResolver()
@@ -25,9 +25,9 @@ export class SourceFragment implements TsSource {
 }
 
 export class SourceFragments extends SourceFragment {
-  readonly dependencies: ReadonlyArray<TsSource>;
+  readonly dependencies: ReadonlyArray<Source>;
 
-  constructor(fragments: ReadonlyArray<TsSource>) {
+  constructor(fragments: ReadonlyArray<Source>) {
     super();
     this.dependencies = fragments;
   }

@@ -1,4 +1,4 @@
-import { SourceFragment } from './ts-source';
+import { SourceFragment } from './source';
 
 export type IdentifierConfig = {
   name?: string;

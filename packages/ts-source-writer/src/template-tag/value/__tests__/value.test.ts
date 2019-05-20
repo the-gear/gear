@@ -1,9 +1,9 @@
 import { runInNewContext } from 'vm';
-import { isTsSource } from '../../ts-source';
+import { isSource } from '../../source';
 import { value } from '../value';
 
 expect.addSnapshotSerializer({
-  test: (obj) => isTsSource(obj),
+  test: (obj) => isSource(obj),
   print: (obj) => obj.toString(),
 });
 

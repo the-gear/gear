@@ -2,7 +2,7 @@
 
 - `ts` template tag vytvori fragment — pouze neco jako AST.
 
-- Kazdy vystup z `ts` (`TsSource`) ma metodu `toString`:
+- Kazdy vystup z `ts` (`Source`) ma metodu `toString`:
 ```ts
 toString() {
   return new SourceResolver(this).toString();

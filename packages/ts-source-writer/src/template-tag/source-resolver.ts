@@ -1,4 +1,4 @@
-import { TsSource, isTsSource } from './ts-source';
+import { Source, isSource } from './source';
 import { isPrimitiveValue, isWithKeys } from './utils';
 
 class Ref {
@@ -35,7 +35,7 @@ export class SourceResolver {
   private suggestedRefNames = new Map<string, Set<Ref>>();
   private identifiers = new Set<string>();
 
-  resolve(source: TsSource): this {
+  resolve(source: Source): this {
     source.resolve && source.resolve(this);
     return this;
   }
@@ -45,12 +45,12 @@ export class SourceResolver {
     return this;
   }
 
-  write(strOrTsSource: string | TsSource): this {
+  write(strOrSource: string | Source): this {
     this.writeDefs();
-    if (typeof strOrTsSource === 'string') {
-      this.source.push(strOrTsSource);
-    } else if (isTsSource(strOrTsSource) && strOrTsSource.write) {
-      strOrTsSource.write(this);
+    if (typeof strOrSource === 'string') {
+      this.source.push(strOrSource);
+    } else if (isSource(strOrSource) && strOrSource.write) {
+      strOrSource.write(this);
     } else {
       throw new Error('Invalid value');
     }

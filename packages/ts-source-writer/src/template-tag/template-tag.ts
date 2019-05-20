@@ -1,4 +1,4 @@
-import { isTsSource, RawSource, SourceFragments, TsSource } from './ts-source';
+import { isSource, RawSource, SourceFragments, Source } from './source';
 import { IdentifierOptions, Identifier } from './identifier';
 import { value } from './value/value';
 
@@ -17,7 +17,7 @@ function dedent(str: string, dedentStr: string | null): string {
 
 export function ts(
   literals: TemplateStringsArray,
-  ...placeholders: Array<TsSource>
+  ...placeholders: Array<Source>
 ): SourceFragments {
   const placeholdersLength = placeholders.length;
   const literalsLength = literals.length;
@@ -31,12 +31,12 @@ export function ts(
   const dedentStr = getDedentStr(lastLiteral);
   lastLiteral = dedent(lastLiteral, dedentStr);
 
-  const fragments: TsSource[] = [];
+  const fragments: Source[] = [];
   for (let i = 0; i < placeholdersLength; i++) {
     const literal = dedent(literals[i], dedentStr);
     fragments.push(new RawSource(literal));
     const source = placeholders[i];
-    if (isTsSource(source)) {
+    if (isSource(source)) {
       fragments.push(source);
     } else if (source === null || source === undefined) {
       // ignore, this allow conditionals

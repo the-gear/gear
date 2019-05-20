@@ -1,4 +1,4 @@
-import { SourceFragment, RawSource } from '../ts-source';
+import { SourceFragment, RawSource } from '../source';
 import { SourceResolver } from '../source-resolver';
 
 export class ObjectValue extends SourceFragment {
