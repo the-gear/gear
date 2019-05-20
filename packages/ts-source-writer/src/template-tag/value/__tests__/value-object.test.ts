@@ -18,14 +18,16 @@ describe('value', () => {
   // });
 
   it('can serialize nested object', () => {
-    const child = {};
+    const nestedChild = {};
+    const child = { nestedChild };
     const nestedObject = {
       child,
       child2: child,
+      child3: child,
     };
     const nestedObjectValue = value(nestedObject);
     expect(nestedObjectValue).toMatchInlineSnapshot(
-      `/* c:1 [] *//* c:2 [child: 1, child2: 1] *//* c:1 [] */`,
+      `/* c:0 [] *//* c:2 [child: 1, child2: 1, child3: 1] *//* c:0 [nestedChild: 3, child$nestedChild: 1, child2$nestedChild: 1, child3$nestedChild: 1] *//* c:0 [] */`,
     );
     expect(valEval(nestedObjectValue)).toEqual(nestedObject);
   });
@@ -39,7 +41,7 @@ describe('value', () => {
       null: null,
     };
     const simpleObjectValue = value(simpleObject);
-    expect(simpleObjectValue).toMatchInlineSnapshot(`/* c:1 [] *//* c:1 [] */`);
+    expect(simpleObjectValue).toMatchInlineSnapshot(`/* c:0 [] *//* c:0 [] */`);
     expect(valEval(simpleObjectValue)).toEqual(simpleObject);
   });
 });

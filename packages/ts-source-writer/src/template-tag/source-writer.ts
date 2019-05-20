@@ -21,11 +21,16 @@ class Ref {
   suggestName(name: string) {
     this.suggestedNames.set(name, (this.suggestedNames.get(name) || 0) + 1);
   }
+
+  refCount(): number {
+    return this.count - (this.parent ? this.parent.count : 1);
+  }
 }
 
 export class SourceWriter {
   private source: string[] = [];
   private refs = new Map<unknown, Ref>();
+  private identifiers = new Set<string>();
 
   resolve(source: TsSource): this {
     source.resolve && source.resolve(this);
@@ -51,6 +56,19 @@ export class SourceWriter {
 
   getTsCode() {
     return this.source.join('');
+  }
+
+  /**
+   * Try reserve identifier. Return true if identifier can be used
+   */
+  tryIdentifier(name: string): boolean {
+    if (this.identifiers.has(name)) return false;
+    this.identifiers.add(name);
+    return true;
+  }
+
+  reserveIdentifier(name: string): void {
+    if (!this.tryIdentifier(name)) throw new Error(`Identifier ${name} is already taken`);
   }
 
   private addRefRecursive(
@@ -95,7 +113,7 @@ export class SourceWriter {
       return this;
     }
     source.push(
-      `/* c:${ref.count} [${[...ref.suggestedNames.entries()]
+      `/* c:${ref.refCount()} [${[...ref.suggestedNames.entries()]
         .map(([k, v]) => `${k}: ${v}`)
         .join(', ')}] */`,
     );
