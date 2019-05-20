@@ -1,12 +1,12 @@
 import { SourceFragment } from '../ts-source';
-import { SourceWriter } from '../source-writer';
+import { SourceResolver } from '../source-resolver';
 
 export class BigIntValue extends SourceFragment {
   constructor(public ref: bigint) {
     super();
   }
 
-  write(writer: SourceWriter) {
+  write(writer: SourceResolver) {
     writer.writeBigInt(this.ref);
   }
 }

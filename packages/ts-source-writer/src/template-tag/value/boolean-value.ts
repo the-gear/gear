@@ -1,12 +1,12 @@
 import { SourceFragment } from '../ts-source';
-import { SourceWriter } from '../source-writer';
+import { SourceResolver } from '../source-resolver';
 
 export class BooleanValue extends SourceFragment {
   constructor(public ref: boolean) {
     super();
   }
 
-  write(writer: SourceWriter) {
+  write(writer: SourceResolver) {
     writer.writeBoolean(this.ref);
   }
 }

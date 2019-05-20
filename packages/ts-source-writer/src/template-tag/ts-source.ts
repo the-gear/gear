@@ -1,4 +1,4 @@
-import { SourceWriter } from './source-writer';
+import { SourceResolver } from './source-resolver';
 
 export const __tsSource = Symbol();
 
@@ -9,15 +9,15 @@ export function isTsSource(value: any): value is TsSource {
 export interface TsSource {
   readonly [__tsSource]: true;
   readonly dependencies?: ReadonlyArray<TsSource>;
-  resolve?: (writer: SourceWriter) => void;
-  write?: (writer: SourceWriter) => void;
+  resolve?: (writer: SourceResolver) => void;
+  write?: (writer: SourceResolver) => void;
 }
 
 export class SourceFragment implements TsSource {
   readonly [__tsSource] = true;
 
   toString(): string {
-    return new SourceWriter()
+    return new SourceResolver()
       .resolve(this)
       .write(this)
       .getTsCode();
@@ -32,11 +32,11 @@ export class SourceFragments extends SourceFragment {
     this.dependencies = fragments;
   }
 
-  resolve(writer: SourceWriter) {
+  resolve(writer: SourceResolver) {
     this.dependencies.forEach((dep) => dep.resolve && dep.resolve(writer));
   }
 
-  write(writer: SourceWriter) {
+  write(writer: SourceResolver) {
     this.dependencies.forEach((dep) => dep.write && dep.write(writer));
   }
 }
@@ -46,7 +46,7 @@ export class RawSource extends SourceFragment {
     super();
   }
 
-  write(writer: SourceWriter) {
+  write(writer: SourceResolver) {
     writer.write(this.source);
   }
 

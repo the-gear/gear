@@ -1,16 +1,16 @@
 import { SourceFragment, RawSource } from '../ts-source';
-import { SourceWriter } from '../source-writer';
+import { SourceResolver } from '../source-resolver';
 
 export class ObjectValue extends SourceFragment {
   constructor(public ref: object) {
     super();
   }
 
-  resolve(writer: SourceWriter) {
+  resolve(writer: SourceResolver) {
     writer.addRef(this.ref);
   }
 
-  write(writer: SourceWriter) {
+  write(writer: SourceResolver) {
     writer.writeRef(this.ref);
   }
 

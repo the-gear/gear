@@ -28,7 +28,7 @@ class Ref {
   }
 }
 
-export class SourceWriter {
+export class SourceResolver {
   private defSource: string[] = [];
   private source: string[] = [];
   private refs = new Map<unknown, Ref>();

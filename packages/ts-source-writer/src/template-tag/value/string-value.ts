@@ -1,12 +1,12 @@
 import { SourceFragment } from '../ts-source';
-import { SourceWriter } from '../source-writer';
+import { SourceResolver } from '../source-resolver';
 
 export class StringValue extends SourceFragment {
   constructor(public ref: string) {
     super();
   }
 
-  write(writer: SourceWriter) {
+  write(writer: SourceResolver) {
     writer.writeString(this.ref);
   }
 }
