@@ -1,162 +1,88 @@
-import { RawSource } from './raw-source';
-import { SourceFragment } from './source-fragment';
+import { TsSource, isTsSource } from './ts-source';
+import { isPrimitiveValue, isWithKeys } from './utils';
+
+class Ref {
+  parent: Ref | null;
+  count = 0;
+  isRecursive: boolean = false;
+  suggestedNames = new Map<string, number>();
+
+  constructor(parent: Ref | null) {
+    this.parent = parent;
+  }
+
+  inc(suggestedNames?: string[]) {
+    this.count++;
+    if (suggestedNames) {
+      suggestedNames.forEach((name) => this.suggestName(name));
+    }
+  }
+
+  suggestName(name: string) {
+    this.suggestedNames.set(name, (this.suggestedNames.get(name) || 0) + 1);
+  }
+}
 
 export class SourceWriter {
-  /**
-   * source tree
-   */
-  private source: SourceFragment;
+  private source: string[] = [];
+  private refs = new Map<unknown, Ref>();
 
-  /**
-   * Module qualified file pathname
-   */
-  public moduleName?: string;
-
-  // /**
-  //  * Map o map of imports:
-  //  *
-  //  * Examples:
-  //  * - `import { ident as alias } from 'modul'`:
-  //  *   'module' → 'ident' → 'alias'
-  //  * - `import defaulExport from 'modul'`:
-  //  *   'modul' → null → 'defaulExport'
-  //  *
-  //  * @internal
-  //  */
-  // private importedModules: Map<string, Map<string | null, string>> = new Map();
-
-  /**
-   * Set of all used identifiers
-   */
-  private usedIdentifiers: Set<string> = new Set();
-
-  constructor(source: SourceFragment, moduleName?: string) {
-    this.source = source;
-    this.moduleName = moduleName;
-  }
-
-  /**
-   * get this module qualified file pathname
-   *
-   * for example: '@the-gear/samples/standalone/src/schema.graphql'
-   */
-  getModuleName(): string | undefined {
-    return this.moduleName;
-  }
-
-  add(code: TsSource): this {
-    this.invalidate();
-    this.codeBlocks.push(code);
-    this.collect(code);
+  resolve(source: TsSource): this {
+    source.resolve && source.resolve(this);
     return this;
   }
 
-  collect(atom: TsSource): void {
-    if (this.sources.has(atom)) return;
-    this.sources.add(atom);
-    if (atom.collect) atom.collect(this);
+  addRef(data: unknown, suggestedNames?: string[]): this {
+    this.addRefRecursive(data, suggestedNames || [], null, new Set());
+    return this;
   }
 
-  resolve() {
-    for (const atom of this.sources) {
-      if (atom.resolve) atom.resolve(this);
-    }
-  }
-
-  private getImportTsSource(): string {
-    const imports: string[] = [];
-    for (const [module, identMap] of this.importedModules) {
-      const idents: string[] = [];
-      let defaultAlias = null;
-      for (const [name, alias] of identMap) {
-        if (name === null) {
-          defaultAlias = alias;
-        } else {
-          if (name === alias) {
-            idents.push(name);
-          } else {
-            idents.push(`${name} as ${alias}`);
-          }
-        }
-      }
-      const fromModule = JSON.stringify(module);
-      if (idents.length) {
-        if (defaultAlias) {
-          imports.push(`import ${defaultAlias}, { ${idents.join(', ')} } from ${fromModule};`);
-        } else {
-          imports.push(`import { ${idents.join(', ')} } from ${fromModule};`);
-        }
-      } else {
-        if (defaultAlias) {
-          imports.push(`import ${defaultAlias} from ${fromModule};`);
-        } else {
-          imports.push(`import ${fromModule};`);
-        }
-      }
-    }
-    return imports.join('\n');
-  }
-
-  getSource(): string {
-    const srcBody: string = this.codeBlocks.getSource(this);
-    const result: string[] = [];
-    const data = this.data.getTsCode();
-    const imports = this.getImportTsSource();
-    if (imports) result.push(imports);
-    if (data) {
-      result.push('/* #region Data */');
-      result.push(data);
-      result.push('/* #endregion Data */');
-    }
-    result.push(srcBody);
-    return result.join('\n');
-  }
-
-  useIdentifier(name: string): string {
-    if (this.usedIdentifiers.has(name)) {
-      throw new Error(`Identifier '${name}' is already registered`);
-    }
-    this.usedIdentifiers.add(name);
-    return name;
-  }
-
-  getFreeIdentifier(ident: string = '$'): string {
-    let nameBase = ident;
-    let freeIdent = nameBase;
-    let i = 0;
-    while (this.usedIdentifiers.has(freeIdent)) {
-      freeIdent = `${nameBase}\$${(++i).toString(36)}`;
-    }
-    this.usedIdentifiers.add(freeIdent);
-    return freeIdent;
-  }
-
-  getImport(moduleName: string, identifier: string | null = null, alias?: string | null): string {
-    const importedModule = this.importedModules.get(moduleName);
-    const prefferedIdentifier: string = alias || identifier || 'import$';
-    if (importedModule) {
-      const mappedIdent = importedModule.get(identifier);
-      if (mappedIdent) {
-        return mappedIdent;
-      } else {
-        const newIdent = this.getFreeIdentifier(prefferedIdentifier);
-        importedModule.set(identifier, newIdent);
-        return newIdent;
-      }
+  write(strOrTsSource: string | TsSource): this {
+    this.writeRefs();
+    if (typeof strOrTsSource === 'string') {
+      this.source.push(strOrTsSource);
+    } else if (isTsSource(strOrTsSource) && strOrTsSource.write) {
+      strOrTsSource.write(this);
     } else {
-      const identMap = new Map();
-      this.importedModules.set(moduleName, identMap);
-      if (identifier === null && alias === null) {
-        return '';
+      throw new Error('Invalid value');
+    }
+    return this;
+  }
+
+  getTsCode() {
+    return this.source.join('');
+  }
+
+  private addRefRecursive(
+    data: unknown,
+    suggestedNames: string[],
+    parent: Ref | null,
+    seen: Set<unknown>,
+  ) {
+    let ref = this.refs.get(data);
+    if (ref && seen.has(data)) {
+      ref.isRecursive = true;
+      return;
+    }
+    if (!ref) {
+      if (isPrimitiveValue(data)) return;
+      ref = new Ref(parent);
+      this.refs.set(data, ref);
+    }
+    seen.add(data);
+    ref.inc(suggestedNames);
+
+    if (isWithKeys(data)) {
+      for (const [key, value] of Object.entries(data)) {
+        const safeKeyId = key;
+        const newSuggestedNames = [
+          safeKeyId,
+          ...suggestedNames.map((name) => `${name}$${safeKeyId}`),
+        ];
+        this.addRefRecursive(value, newSuggestedNames, ref, seen);
       }
-      const newName = this.getFreeIdentifier(prefferedIdentifier);
-      identMap.set(identifier, newName);
-      return newName;
     }
   }
 
-  getTypeImport(moduleName: string, qualifiedTypeName: string): RawSource {
-    // return this.getImport(moduleName, identifier, alias);
-    return new RawSource(`import(${JSON.stringify(moduleName)}).${qualifiedTypeName}`);
-  }
+  private writeRefs() {}
 }

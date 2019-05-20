@@ -167,3 +167,24 @@ export function isPrimitiveValue(
     }
   }
 }
+
+export function isWithKeys(data: unknown): data is {} | Function {
+  switch (typeof data) {
+    case 'function': {
+      return true;
+    }
+    case 'object': {
+      return data !== null;
+    }
+
+    // case 'symbol':
+    // case 'string':
+    // case 'number':
+    // case 'boolean':
+    // case 'bigint':
+    // case 'undefined':
+    default: {
+      return false;
+    }
+  }
+}

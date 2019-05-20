@@ -1,4 +1,6 @@
-import { isTsSource, RawSource, SourceFragment, SourceFragments, TsSource } from './ts-source';
+import { isTsSource, RawSource, SourceFragments, TsSource } from './ts-source';
+import { IdentifierOptions, Identifier } from './identifier';
+import { value } from './value/value';
 
 function getDedentStr(str: string): string | null {
   const match = str.match(/(?:\r\n|\r|\n)(\s*)$/);
@@ -16,7 +18,7 @@ function dedent(str: string, dedentStr: string | null): string {
 export function ts(
   literals: TemplateStringsArray,
   ...placeholders: Array<TsSource>
-): SourceFragment {
+): SourceFragments {
   const placeholdersLength = placeholders.length;
   const literalsLength = literals.length;
   if (literalsLength - 1 !== placeholdersLength) {
@@ -36,25 +38,14 @@ export function ts(
     const source = placeholders[i];
     if (isTsSource(source)) {
       fragments.push(source);
-    } else if (source === null) {
-      // ignore null
-      // fragments.push(new RawSource('null'));
+    } else if (source === null || source === undefined) {
+      // ignore, this allow conditionals
     } else {
-      const typeofSource = typeof source;
-      switch (typeofSource) {
-        case 'string':
-        case 'number':
-        case 'boolean': {
-          fragments.push(new RawSource(JSON.stringify(source)));
-          break;
-        }
-        default: {
-          throw new Error(
-            `[ts-source-builder] Invalid value of type ${typeofSource}, placeholder ${i +
-              1}: ${JSON.stringify(source)}, after code block ${literal}`,
-          );
-        }
-      }
+      throw new Error(
+        `[ts-source-writer] Invalid (unescaped) value, placeholder ${i + 1}: ${JSON.stringify(
+          source,
+        )}, after code block ${literal}`,
+      );
     }
   }
 
@@ -70,33 +61,45 @@ export function ts(
 // when serializing, if module count only one reference, include it raw.
 // when multiple references are encoutered, it will emit `const` declaration
 
-export function value(data: any, config?: ConstDataConfigWithoutData | string): ConstData {
-  // return new RawSource(JSON.stringify(val));
-  return new ConstData({
-    ...(typeof config === 'string' ? { name: config } : config || {}),
-    data,
-  });
+export function identifier(options?: IdentifierOptions): Identifier {
+  return new Identifier(options);
 }
 
-export function identifier(name?: string, noRename?: boolean): Identifier {
-  return new Identifier({ name, noRename });
+// export function importId(
+//   from: string,
+//   name?: string | null,
+//   alias?: string | null,
+//   noRename?: boolean,
+// ): ImportedIdentifier {
+//   return new ImportedIdentifier({
+//     from,
+//     name,
+//     alias,
+//     noRename,
+//   });
+// }
+
+/**
+ * Emit `const` _name_ `=` _value_
+ * reserve _name_ as identifier
+ */
+export function constVal(name: string, value: unknown): SourceFragments {
+  const id = ts.id(name);
+  return ts`const ${id} = ${ts.value(value)};`;
 }
 
-export function importId(
-  from: string,
-  name?: string | null,
-  alias?: string | null,
-  noRename?: boolean,
-): ImportedIdentifier {
-  return new ImportedIdentifier({
-    from,
-    name,
-    alias,
-    noRename,
-  });
+/**
+ * Emit `export const` _name_ `=` _value_
+ * reserve _name_ as identifier
+ */
+export function exportVal(name: string, value: unknown): SourceFragments {
+  const id = ts.id({ name });
+  return ts`export const ${id} = ${ts.value(value)};`;
 }
 
 // expose for easy of use
-ts.val = value;
+ts.value = value;
 ts.id = identifier;
-ts.import = importId;
+// ts.import = importId;
+ts.export = exportVal;
+ts.const = constVal;

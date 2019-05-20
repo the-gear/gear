@@ -1,6 +1,6 @@
 import { CompilerOptions } from 'typescript';
 import { TranspileOutput, transpileModule } from './transpiler';
-import { SourceModule } from './source/source-module';
+import { SourceModule } from './template-tag/source-writer';
 
 export class TsModuleBuilder extends SourceModule {
   constructor(moduleName: string = 'no-name', public compilerOptions: CompilerOptions = {}) {

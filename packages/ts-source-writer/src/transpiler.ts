@@ -1,11 +1,19 @@
-import * as ts from 'typescript';
+import {
+  CompilerHost,
+  CompilerOptions,
+  createProgram,
+  createSourceFile,
+  Diagnostic,
+  getDefaultCompilerOptions,
+  TranspileOptions,
+} from 'typescript';
 
 // **********************************************************
 // * Extracted from TypeScript source v 3.4.5, BUT MODIFIED *
 // **********************************************************
 
 export interface TranspileOutput {
-  diagnostics?: ts.Diagnostic[];
+  diagnostics?: Diagnostic[];
   outputText: string;
   sourceMapText?: string;
   declarationText: string;
@@ -22,12 +30,11 @@ export interface TranspileOutput {
  */
 export function transpileModule(
   input: string,
-  transpileOptions: ts.TranspileOptions,
+  transpileOptions: TranspileOptions,
 ): TranspileOutput {
-  const diagnostics: ts.Diagnostic[] = [];
+  const diagnostics: Diagnostic[] = [];
 
-  const options: ts.CompilerOptions =
-    transpileOptions.compilerOptions || ts.getDefaultCompilerOptions();
+  const options: CompilerOptions = transpileOptions.compilerOptions || getDefaultCompilerOptions();
 
   options.isolatedModules = true;
 
@@ -64,7 +71,7 @@ export function transpileModule(
 
   // if jsx is specified then treat file as .tsx
   const inputFileName = transpileOptions.fileName || (options.jsx ? 'module.tsx' : 'module.ts');
-  const sourceFile = ts.createSourceFile(inputFileName, input, options.target!); // TODO: GH#18217
+  const sourceFile = createSourceFile(inputFileName, input, options.target!); // TODO: GH#18217
   if (transpileOptions.moduleName) {
     sourceFile.moduleName = transpileOptions.moduleName;
   }
@@ -75,7 +82,7 @@ export function transpileModule(
   let declarationText: string | undefined;
 
   // Create a compilerHost object to allow the compiler to read and write files
-  const compilerHost: ts.CompilerHost = {
+  const compilerHost: CompilerHost = {
     getSourceFile: (fileName) => (fileName === inputFileName ? sourceFile : undefined),
     writeFile: (name, text) => {
       if (fileExtensionIs(name, '.map')) {
@@ -106,7 +113,7 @@ export function transpileModule(
     getDirectories: () => [],
   };
 
-  const program = ts.createProgram([inputFileName], options, compilerHost);
+  const program = createProgram([inputFileName], options, compilerHost);
 
   if (transpileOptions.reportDiagnostics) {
     addRange(/*to*/ diagnostics, /*from*/ program.getSyntacticDiagnostics(sourceFile));

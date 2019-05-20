@@ -1,5 +1,4 @@
-import { SourceAtom } from './source-atom';
-import { SourceModule } from './source-module';
+import { SourceFragment } from './ts-source';
 
 export type IdentifierConfig = {
   name?: string;
@@ -10,7 +9,7 @@ export type IdentifierConfig = {
 
 export type IdentifierOptions = IdentifierConfig | string | string[];
 
-export class Identifier extends SourceAtom implements IdentifierConfig {
+export class Identifier extends SourceFragment implements IdentifierConfig {
   name?: string;
   possibleNames?: string[];
   noRename?: boolean;
@@ -30,21 +29,5 @@ export class Identifier extends SourceAtom implements IdentifierConfig {
         this.noRename = config.noRename;
       }
     }
-  }
-
-  collect(modul: SourceModule) {
-    if (this.noRename && this.name) {
-      this.resolvedName = modul.useIdentifier(this.name);
-    }
-  }
-
-  resolve(modul: SourceModule) {
-    if (!this.resolvedName) {
-      this.resolvedName = modul.getFreeIdentifier(this.name);
-    }
-  }
-
-  getSource(modul: SourceModule) {
-    return this.resolvedName || this.name || modul.getFreeIdentifier();
   }
 }
