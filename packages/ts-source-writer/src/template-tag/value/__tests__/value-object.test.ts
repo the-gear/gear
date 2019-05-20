@@ -29,14 +29,11 @@ describe('value', () => {
     expect(nestedObjectValue).toMatchInlineSnapshot(`
       /* #region hoisted definitions */
 
-
       // 1× [child: 1, child2: 1, child3: 1]
       const child = null; // TODO
       // 1× [nestedChild: 3, child$nestedChild: 1, child2$nestedChild: 1, child3$nestedChild: 1]
       const nestedChild = null; // TODO
-
       /* #endregion hoisted definitions */
-
       /* 0× [] */
     `);
     expect(valEval(nestedObjectValue)).toEqual(nestedObject);

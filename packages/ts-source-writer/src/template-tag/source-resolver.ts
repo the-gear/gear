@@ -1,12 +1,19 @@
 import { Source, isSource } from './source';
 import { isPrimitiveValue, isWithKeys } from './utils';
 
+enum RefStage {
+  WillWrite,
+  Writing,
+  Written,
+}
+
 class Ref {
   parents = new Set<Ref>();
   suggestedNames = new Map<string, number>();
   isRecursive: boolean = false;
   identifier: string | null = null;
   isExport: boolean = false;
+  stage: RefStage = RefStage.WillWrite;
 
   addParent(parent: Ref) {
     this.parents.add(parent);
@@ -40,11 +47,6 @@ export class SourceResolver {
     return this;
   }
 
-  addRef(data: unknown, suggestedNames?: string[]): this {
-    this.addRefRecursive(data, suggestedNames || [], null, new Set());
-    return this;
-  }
-
   write(strOrSource: string | Source): this {
     this.writeDefs();
     if (typeof strOrSource === 'string') {
@@ -54,6 +56,11 @@ export class SourceResolver {
     } else {
       throw new Error('Invalid value');
     }
+    return this;
+  }
+
+  addRef(data: unknown, suggestedNames?: string[]): this {
+    this.addRefRecursive(data, suggestedNames || [], null, new Set());
     return this;
   }
 
@@ -70,7 +77,7 @@ export class SourceResolver {
       result.push('/* #endregion hoisted definitions */');
     }
     result.push(this.source.join(''));
-    return result.join('\n\n');
+    return result.join('\n');
   }
 
   /**
@@ -138,11 +145,16 @@ export class SourceResolver {
       source.push(`/* ??? ${typeof data} */`);
       return this;
     }
-    source.push(
-      `/* ${ref.refCount()}× [${[...ref.suggestedNames.entries()]
-        .map(([k, v]) => `${k}: ${v}`)
-        .join(', ')}] */`,
-    );
+    if (ref.identifier) {
+      source.push(ref.identifier);
+      return this;
+    }
+    if (ref.stage)
+      source.push(
+        `/* ${ref.refCount()}× [${[...ref.suggestedNames.entries()]
+          .map(([k, v]) => `${k}: ${v}`)
+          .join(', ')}] */`,
+      );
     return this;
   }
 
@@ -173,6 +185,48 @@ export class SourceResolver {
 
   writeUndefined() {
     return this.writeCode('undefined');
+  }
+
+  writeNull(): this {
+    return this.writeCode('null');
+  }
+
+  writeObject(obj: {}): this {
+    return this.writeCode(JSON.stringify(obj));
+  }
+
+  writeArray(array: {}): this {
+    return this.writeCode(JSON.stringify(array));
+  }
+
+  writeFunction(fn: Function): this {
+    // TODO
+    return this.writeCode(fn.toString());
+  }
+
+  writeValue(val: unknown): this {
+    switch (typeof val) {
+      case 'string':
+        return this.writeString(val);
+      case 'number':
+        return this.writeNumber(val);
+      case 'boolean':
+        return this.writeBoolean(val);
+      case 'bigint':
+        return this.writeBigInt(val);
+      case 'undefined':
+        return this.writeUndefined();
+      case 'object': {
+        if (val === null) return this.writeNull();
+        if (Array.isArray(val)) this.writeArray(val);
+        return this.writeObject(val);
+      }
+      case 'symbol':
+        return this.writeSymbol(val);
+      case 'function':
+        return this.writeFunction(val);
+    }
+    throw new Error(`[writeValue]: does not know how to write`);
   }
 
   getIdentifierFor(ref: Ref) {
@@ -210,6 +264,8 @@ export class SourceResolver {
     }
 
     const id = this.getIdentifierFor(ref);
+
+    this.writeValue;
 
     defSource.push(
       `\n// ${ref.refCount()}× [${[...ref.suggestedNames.entries()]
