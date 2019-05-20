@@ -1,5 +1,5 @@
 import { runInNewContext } from 'vm';
-import { isSource } from '../../source';
+import { isSource } from '../source';
 import { value } from '../value';
 
 expect.addSnapshotSerializer({
@@ -11,8 +11,8 @@ const valEval = (x: unknown) => runInNewContext(value(x).toString());
 
 describe('value', () => {
   it('should be idempotent', () => {
-    const nullVal = value(':-)');
-    expect(value(nullVal)).toEqual(nullVal);
+    const randomValue = value(':-)');
+    expect(value(randomValue)).toEqual(randomValue);
   });
 
   it('can serialize null', () => {

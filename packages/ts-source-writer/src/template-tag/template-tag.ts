@@ -1,6 +1,6 @@
 import { isSource, RawSource, SourceFragments, Source } from './source';
 import { IdentifierOptions, Identifier } from './identifier';
-import { value } from './value/value';
+import { value } from './value';
 
 function getDedentStr(str: string): string | null {
   const match = str.match(/(?:\r\n|\r|\n)(\s*)$/);

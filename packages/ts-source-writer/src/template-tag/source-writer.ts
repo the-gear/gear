@@ -44,7 +44,7 @@ export class SourceWriter {
   }
 
   writeObject(obj: {}): this {
-    return this.writeCode(JSON.stringify(obj));
+    return this.writeCode(`(${JSON.stringify(obj)})`);
   }
 
   writeArray(array: {}): this {

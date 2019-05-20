@@ -140,4 +140,19 @@ export class SourceResolver extends SourceWriter {
 
     throw new Error('TODO: [getIdentifierFor] Candidates');
   }
+
+  writeRef(data: unknown) {
+    const ref = this.refs.get(data);
+    if (!ref) {
+      if (isPrimitiveValue(data)) {
+        this.writeValue(data);
+        return;
+      } else {
+        throw new Error('Cannot find ref');
+      }
+    }
+    if (ref.refCount() === 0) {
+      this.writeObject(data as object);
+    }
+  }
 }

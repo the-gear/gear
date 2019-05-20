@@ -1,10 +1,11 @@
 import { runInNewContext } from 'vm';
-import { isSource } from '../../source';
+import { isSource } from '../source';
 import { value } from '../value';
+import { Source } from 'graphql';
 
 expect.addSnapshotSerializer({
   test: (obj) => isSource(obj),
-  print: (obj) => obj.toString(),
+  print: (obj) => (obj as Source).toString(),
 });
 
 const valEval = (x: unknown) => runInNewContext(value(x).toString());
@@ -13,7 +14,7 @@ describe('value', () => {
   it('can serialize empty object', () => {
     const emptyObject = {};
     const emptyObjectValue = value(emptyObject);
-    expect(emptyObjectValue).toMatchInlineSnapshot(`{}`);
+    expect(emptyObjectValue).toMatchInlineSnapshot(`({})`);
     expect(valEval(emptyObjectValue)).toEqual(emptyObject);
   });
 
@@ -27,7 +28,7 @@ describe('value', () => {
     };
     const nestedObjectValue = value(nestedObject);
     expect(nestedObjectValue).toMatchInlineSnapshot(
-      `{"child":{"nestedChild":{}},"child2":{"nestedChild":{}},"child3":{"nestedChild":{}}}`,
+      `({"child":{"nestedChild":{}},"child2":{"nestedChild":{}},"child3":{"nestedChild":{}}})`,
     );
     expect(valEval(nestedObjectValue)).toEqual(nestedObject);
   });
