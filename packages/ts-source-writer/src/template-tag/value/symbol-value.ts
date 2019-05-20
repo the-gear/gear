@@ -1,12 +1,12 @@
 import { NotSerializableValue } from './not-serializable-value';
+import { SourceWriter } from '../source-writer';
 
 export class SymbolValue extends NotSerializableValue {
   constructor(public ref: symbol) {
     super();
   }
 
-  toString() {
-    // Well, I can register symbols on module and emit reference here, but...
-    return `undefined /* ${this.ref.toString().replace(/\*\//g, '* /')} */`;
+  write(writer: SourceWriter) {
+    writer.writeSymbol(this.ref);
   }
 }

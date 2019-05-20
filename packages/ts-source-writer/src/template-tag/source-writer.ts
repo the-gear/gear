@@ -5,6 +5,8 @@ class Ref {
   parents = new Set<Ref>();
   suggestedNames = new Map<string, number>();
   isRecursive: boolean = false;
+  identifier: string | null = null;
+  isExport: boolean = false;
 
   addParent(parent: Ref) {
     this.parents.add(parent);
@@ -27,6 +29,7 @@ class Ref {
 }
 
 export class SourceWriter {
+  private defSource: string[] = [];
   private source: string[] = [];
   private refs = new Map<unknown, Ref>();
   private suggestedRefNames = new Map<string, Set<Ref>>();
@@ -43,7 +46,7 @@ export class SourceWriter {
   }
 
   write(strOrTsSource: string | TsSource): this {
-    this.writeRefs(this.source);
+    this.writeDefs();
     if (typeof strOrTsSource === 'string') {
       this.source.push(strOrTsSource);
     } else if (isTsSource(strOrTsSource) && strOrTsSource.write) {
@@ -54,8 +57,20 @@ export class SourceWriter {
     return this;
   }
 
+  writeCode(code: string): this {
+    this.source.push(code);
+    return this;
+  }
+
   getTsCode() {
-    return this.source.join('');
+    const result = [];
+    if (this.defSource.length) {
+      result.push('/* #region hoisted definitions */');
+      result.push(this.defSource.join(''));
+      result.push('/* #endregion hoisted definitions */');
+    }
+    result.push(this.source.join(''));
+    return result.join('\n\n');
   }
 
   /**
@@ -99,7 +114,7 @@ export class SourceWriter {
     seen.add(data);
     if (parent) ref.addParent(parent);
     ref.suggestNames(suggestedNames);
-    suggestedNames.forEach((name) => this.suggestRefName(name, ref));
+    suggestedNames.forEach((name) => this.suggestRefName(name, ref as Ref));
 
     if (isWithKeys(data)) {
       for (const [key, value] of Object.entries(data)) {
@@ -131,10 +146,82 @@ export class SourceWriter {
     return this;
   }
 
-  private writeRefs(source: string[] = this.source) {
+  writeBigInt(bigint: bigint): this {
+    return this.writeCode(`BigInt('${bigint.toString()}')`);
+  }
+
+  writeBoolean(bool: boolean): this {
+    return this.writeCode(bool ? 'true' : 'false');
+  }
+
+  writeNumber(n: number): this {
+    if (Number.isNaN(n)) return this.writeCode('Number.NaN');
+    if (n === Number.POSITIVE_INFINITY) return this.writeCode('Number.POSITIVE_INFINITY');
+    if (n === Number.NEGATIVE_INFINITY) return this.writeCode('Number.NEGATIVE_INFINITY');
+    return this.writeCode(n.toString());
+  }
+
+  writeString(str: string): this {
+    return this.writeCode(JSON.stringify(str));
+  }
+
+  writeSymbol(_sym: symbol): this {
+    // Well, I can register symbols on module and emit reference here, but...
+    // return this.writeCode(`undefined /* ${sym.toString().replace(/\*\//g, '* /')} */`);
+    throw new Error(`TODO: Symbol`);
+  }
+
+  getIdentifierFor(ref: Ref) {
+    if (ref.identifier) {
+      return ref.identifier;
+    }
+    const names = [...ref.suggestedNames.entries()];
+    // sort by suggestion count
+    names.sort((a, b) => b[1] - a[1]);
+    let name: string;
+    for (let i = 0; i < names.length; i++) {
+      name = names[i][0];
+      const refSet = this.suggestedRefNames.get(name);
+      if (!refSet) {
+        throw new Error(`RefSet not contain entry for '${name}'`);
+      }
+      if (refSet.size === 1 && refSet.has(ref)) {
+        if (this.tryIdentifier(name)) {
+          ref.identifier = name;
+          return name;
+        }
+      }
+    }
+
+    throw new Error('TODO: [getIdentifierFor] Candidates');
+  }
+
+  writeDef(
+    data: unknown,
+    defSource: string[] = this.defSource,
+    ref: Ref | undefined = this.refs.get(data),
+  ): this {
+    if (!ref) {
+      throw new Error(`Reference not acquired`);
+    }
+
+    const id = this.getIdentifierFor(ref);
+
+    defSource.push(
+      `// ${ref.refCount()}× [${[...ref.suggestedNames.entries()]
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(', ')}]
+      `,
+    );
+    defSource.push(`${ref.isExport ? 'export ' : ''} const ${id} = null; // TODO`);
+
+    return this;
+  }
+
+  private writeDefs(source: string[] = this.defSource) {
     for (const [data, ref] of this.refs.entries()) {
       if (ref.refCount() > 0 || ref.isRecursive) {
-        this.writeRef(data, source, ref);
+        this.writeDef(data, source, ref);
       }
     }
   }

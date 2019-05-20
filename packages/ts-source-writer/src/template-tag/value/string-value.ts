@@ -1,11 +1,12 @@
 import { SourceFragment } from '../ts-source';
+import { SourceWriter } from '../source-writer';
 
 export class StringValue extends SourceFragment {
   constructor(public ref: string) {
     super();
   }
 
-  toString() {
-    return JSON.stringify(this.ref);
+  write(writer: SourceWriter) {
+    writer.writeString(this.ref);
   }
 }
