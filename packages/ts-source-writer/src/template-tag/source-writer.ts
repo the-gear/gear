@@ -208,12 +208,11 @@ export class SourceWriter {
     const id = this.getIdentifierFor(ref);
 
     defSource.push(
-      `// ${ref.refCount()}× [${[...ref.suggestedNames.entries()]
+      `\n// ${ref.refCount()}× [${[...ref.suggestedNames.entries()]
         .map(([k, v]) => `${k}: ${v}`)
-        .join(', ')}]
-      `,
+        .join(', ')}]`,
     );
-    defSource.push(`${ref.isExport ? 'export ' : ''} const ${id} = null; // TODO`);
+    defSource.push(`\n${ref.isExport ? 'export ' : ''}const ${id} = null; // TODO`);
 
     return this;
   }
