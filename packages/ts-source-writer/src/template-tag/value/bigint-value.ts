@@ -6,7 +6,7 @@ export class BigIntValue extends SourceFragment {
     super();
   }
 
-  write(writer: SourceResolver) {
-    writer.writeBigInt(this.ref);
+  write(resolver: SourceResolver) {
+    resolver.writeBigInt(this.ref);
   }
 }

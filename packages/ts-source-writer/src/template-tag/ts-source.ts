@@ -9,8 +9,8 @@ export function isTsSource(value: any): value is TsSource {
 export interface TsSource {
   readonly [__tsSource]: true;
   readonly dependencies?: ReadonlyArray<TsSource>;
-  resolve?: (writer: SourceResolver) => void;
-  write?: (writer: SourceResolver) => void;
+  resolve?: (resolver: SourceResolver) => void;
+  write?: (resolver: SourceResolver) => void;
 }
 
 export class SourceFragment implements TsSource {
@@ -32,12 +32,12 @@ export class SourceFragments extends SourceFragment {
     this.dependencies = fragments;
   }
 
-  resolve(writer: SourceResolver) {
-    this.dependencies.forEach((dep) => dep.resolve && dep.resolve(writer));
+  resolve(resolver: SourceResolver) {
+    this.dependencies.forEach((dep) => dep.resolve && dep.resolve(resolver));
   }
 
-  write(writer: SourceResolver) {
-    this.dependencies.forEach((dep) => dep.write && dep.write(writer));
+  write(resolver: SourceResolver) {
+    this.dependencies.forEach((dep) => dep.write && dep.write(resolver));
   }
 }
 
@@ -46,8 +46,8 @@ export class RawSource extends SourceFragment {
     super();
   }
 
-  write(writer: SourceResolver) {
-    writer.write(this.source);
+  write(resolver: SourceResolver) {
+    resolver.write(this.source);
   }
 
   toString(): string {

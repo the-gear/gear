@@ -1,11 +1,12 @@
 import { SourceFragment } from '../ts-source';
+import { SourceResolver } from '../source-resolver';
 
 export class UndefinedValue extends SourceFragment {
   constructor() {
     super();
   }
 
-  toString() {
-    return 'undefined';
+  write(resolver: SourceResolver) {
+    resolver.writeUndefined();
   }
 }

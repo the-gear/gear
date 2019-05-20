@@ -6,12 +6,12 @@ export class ObjectValue extends SourceFragment {
     super();
   }
 
-  resolve(writer: SourceResolver) {
-    writer.addRef(this.ref);
+  resolve(resolver: SourceResolver) {
+    resolver.addRef(this.ref);
   }
 
-  write(writer: SourceResolver) {
-    writer.writeRef(this.ref);
+  write(resolver: SourceResolver) {
+    resolver.writeRef(this.ref);
   }
 
   static readonly null = new RawSource('null');

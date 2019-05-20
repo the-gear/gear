@@ -6,7 +6,7 @@ export class BooleanValue extends SourceFragment {
     super();
   }
 
-  write(writer: SourceResolver) {
-    writer.writeBoolean(this.ref);
+  write(resolver: SourceResolver) {
+    resolver.writeBoolean(this.ref);
   }
 }

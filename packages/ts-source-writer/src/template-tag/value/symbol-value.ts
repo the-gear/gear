@@ -6,7 +6,7 @@ export class SymbolValue extends NotSerializableValue {
     super();
   }
 
-  write(writer: SourceResolver) {
-    writer.writeSymbol(this.ref);
+  write(resolver: SourceResolver) {
+    resolver.writeSymbol(this.ref);
   }
 }

@@ -6,7 +6,7 @@ export class NumberValue extends SourceFragment {
     super();
   }
 
-  write(writer: SourceResolver) {
-    writer.writeNumber(this.ref);
+  write(resolver: SourceResolver) {
+    resolver.writeNumber(this.ref);
   }
 }

@@ -171,6 +171,10 @@ export class SourceResolver {
     throw new Error(`TODO: Symbol`);
   }
 
+  writeUndefined() {
+    return this.writeCode('undefined');
+  }
+
   getIdentifierFor(ref: Ref) {
     if (ref.identifier) {
       return ref.identifier;

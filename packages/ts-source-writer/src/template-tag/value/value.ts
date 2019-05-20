@@ -7,7 +7,7 @@ import { ObjectValue } from './object-value';
 import { StringValue } from './string-value';
 import { SymbolValue } from './symbol-value';
 import { UndefinedValue } from './undefined-value';
-import { isTsSource, RawSource } from '../ts-source';
+import { isTsSource, RawSource, TsSource } from '../ts-source';
 
 export type Value =
   | UndefinedValue
@@ -27,10 +27,11 @@ export function value(data: string): StringValue;
 export function value(data: bigint): BigIntValue;
 export function value(data: Array<unknown>): ArrayValue;
 export function value(data: symbol): SymbolValue;
+export function value(data: TsSource): TsSource;
 export function value(data: Function): FunctionValue;
 export function value(data: object): ObjectValue;
 export function value(data: unknown): Value;
-export function value(data: unknown): Value {
+export function value(data: unknown): Value | TsSource {
   switch (typeof data) {
     case 'undefined': {
       return new UndefinedValue();
