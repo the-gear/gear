@@ -11,7 +11,7 @@ export class SourceValue extends SourceFragment {
   }
 
   write(resolver: SourceResolver) {
-    resolver.writeRef(this.data);
+    resolver.writeValue(this.data);
   }
 }
 

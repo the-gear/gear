@@ -18,21 +18,6 @@ describe('value', () => {
     expect(valEval(emptyObjectValue)).toEqual(emptyObject);
   });
 
-  it('can serialize nested object', () => {
-    const nestedChild = {};
-    const child = { nestedChild };
-    const nestedObject = {
-      child,
-      child2: child,
-      child3: child,
-    };
-    const nestedObjectValue = value(nestedObject);
-    expect(nestedObjectValue).toMatchInlineSnapshot(
-      `({"child":{"nestedChild":{}},"child2":{"nestedChild":{}},"child3":{"nestedChild":{}}})`,
-    );
-    expect(valEval(nestedObjectValue)).toEqual(nestedObject);
-  });
-
   it('can serialize simple object', () => {
     const simpleObject = {
       int: 1,
@@ -42,7 +27,30 @@ describe('value', () => {
       null: null,
     };
     const simpleObjectValue = value(simpleObject);
-    expect(simpleObjectValue).toMatchInlineSnapshot();
+    expect(simpleObjectValue).toMatchInlineSnapshot(
+      `({int: 1, float: 0.125, bigint: BigInt('18446744082299486207'), undef: undefined, null: null})`,
+    );
     expect(valEval(simpleObjectValue)).toEqual(simpleObject);
+  });
+
+  it('can serialize nested object', () => {
+    const nestedChild = { a: 1 };
+    const child = { nestedChild, n: nestedChild };
+    const nestedObject = {
+      child,
+      child2: child,
+      child3: child,
+    };
+    const nestedObjectValue = value(nestedObject);
+    expect(nestedObjectValue).toMatchInlineSnapshot(`
+      // #region data definitions
+      const nestedChild = ({a: 1});
+
+      const child = ({nestedChild, n: nestedChild});
+      // #endregion data definitions
+
+      ({child, child2: child, child3: child})
+    `);
+    expect(valEval(nestedObjectValue)).toEqual(nestedObject);
   });
 });

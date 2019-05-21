@@ -106,6 +106,14 @@ export const forbiddenPropertyNameSet = new Set();
 const reIdentifier = /^[$_\p{ID_Start}][$\p{ID_Continue}]*$/u;
 
 /**
+ * test if name is perfectly safe identifier
+ */
+export function isSafeName(name: string): boolean {
+  if (allKeywordsSet.has(name)) return false;
+  return reIdentifier.test(name);
+}
+
+/**
  * test if name can be used as identifier
  */
 export function isValidIdentifierName(name: string): boolean {
