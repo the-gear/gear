@@ -42,19 +42,14 @@ describe('`ts` template tag', () => {
 
   it('should rename identifiers properly', () => {
     const id1 = ts.id('mineId');
-    const id2 = ts.id();
-    const src = ts`
-      [
-        ${id1}, ${id2},
-        ${id1}, ${id2},
-      ]
-    `;
-    expect(src.toString().trim()).toMatchInlineSnapshot(`
-      "[
-          mineId, $id$1,
-          mineId, $id$1,
-        ]"
-    `);
+    const id2 = ts.id(['mineId', 'secondOpt']);
+    const id3 = ts.id(['mineId', 'secondOpt']);
+    const id4 = ts.id(['mineId', 'secondOpt']);
+    const id5 = ts.id();
+    const src = ts`[${id1}, ${id2}, ${id3}, ${id4}, ${id5}]`;
+    expect(src.toString().trim()).toMatchInlineSnapshot(
+      `"[mineId, secondOpt, mineId$1, mineId$2, $id$1]"`,
+    );
   });
 
   // it('should import identifiers properly 1', () => {
