@@ -18,6 +18,13 @@ describe('value', () => {
     expect(valEval(emptyObjectValue)).toEqual(emptyObject);
   });
 
+  it('can serialize empty array', () => {
+    const emptyArray = [];
+    const emptyArrayValue = value(emptyArray);
+    expect(emptyArrayValue).toMatchInlineSnapshot(`[]`);
+    expect(valEval(emptyArrayValue)).toEqual(emptyArray);
+  });
+
   it('can serialize simple object', () => {
     const simpleObject = {
       int: 1,

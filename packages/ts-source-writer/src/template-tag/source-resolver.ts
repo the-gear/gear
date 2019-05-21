@@ -232,8 +232,44 @@ export class SourceResolver {
     throw new Error(`[writeObject] Unhandled case '${ref.identifier}' ${RefStage[ref.stage]}`);
   }
 
-  writeArray(array: {}): this {
-    return this.writeCode(JSON.stringify(array));
+  writeArray(array: unknown[]): this {
+    const ref = this.refs.get(array);
+    if (!ref) {
+      throw new Error('[writeArray] Ref not found');
+    }
+
+    if (ref.stage === RefStage.WILL_WRITE && ref.refCount() > 0) {
+      this.writeRefDep(ref);
+    }
+
+    if (ref.stage === RefStage.WRITTEN) {
+      if (!ref.identifier) {
+        throw new Error('Array is written but have no identifier');
+      }
+      this.writeCode(ref.identifier);
+      return this;
+    }
+
+    if (ref.stage === RefStage.WRITTING) {
+      throw new Error('Unhandled recursion');
+    }
+
+    if (ref.stage === RefStage.WILL_WRITE || ref.stage === RefStage.WILL_WRITE_DEP) {
+      ref.stage = RefStage.WRITTING;
+      this.writeCode('[');
+      let sep = '';
+      for (let i = 0; i < array.length; i++) {
+        const value = array[i];
+        this.writeCode(sep);
+        this.writeValue(value);
+        sep = ', ';
+      }
+      this.writeCode(']');
+      ref.stage = RefStage.WRITTEN;
+      return this;
+    }
+
+    throw new Error(`[writeObject] Unhandled case '${ref.identifier}' ${RefStage[ref.stage]}`);
   }
 
   writeFunction(fn: Function): this {
@@ -255,7 +291,7 @@ export class SourceResolver {
         return this.writeUndefined();
       case 'object': {
         if (val === null) return this.writeNull();
-        if (Array.isArray(val)) this.writeArray(val);
+        if (Array.isArray(val)) return this.writeArray(val);
         return this.writeObject(val);
       }
       case 'symbol':
