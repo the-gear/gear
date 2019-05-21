@@ -17,7 +17,7 @@ function dedent(str: string, dedentStr: string | null): string {
 
 export function ts(
   literals: TemplateStringsArray,
-  ...placeholders: Array<Source>
+  ...placeholders: Array<Source | null>
 ): SourceFragments {
   const placeholdersLength = placeholders.length;
   const literalsLength = literals.length;

@@ -34,8 +34,8 @@ class Ref {
     this.suggestedNames.set(name, (this.suggestedNames.get(name) || 0) + 1);
   }
 
-  refCount(): number {
-    return this.parents.size;
+  shouldWriteDep(): boolean {
+    return this.parents.size > 1;
   }
 }
 
@@ -45,9 +45,13 @@ export class SourceResolver {
   private refs = new Map<unknown, Ref>();
   private suggestedRefNames = new Map<string, Set<Ref>>();
   private identifiers = new Set<string>();
+  private resolvedSources = new Set<Source>();
 
   resolve(source: Source): this {
-    source.resolve && source.resolve(this);
+    if (source.resolve && !this.resolvedSources.has(source)) {
+      this.resolvedSources.add(source);
+      source.resolve(this);
+    }
     return this;
   }
 
@@ -166,7 +170,7 @@ export class SourceResolver {
 
   private writeRefDeps(refs = this.refs.values()) {
     for (const ref of refs) {
-      if (ref && ref.refCount() && !ref.identifier) {
+      if (ref && ref.shouldWriteDep() && !ref.identifier) {
         this.writeRefDep(ref);
       }
     }
@@ -191,13 +195,13 @@ export class SourceResolver {
       throw new Error('[writeObject] Ref not found');
     }
 
-    if (ref.stage === RefStage.WILL_WRITE && ref.refCount() > 0) {
+    if (ref.stage === RefStage.WILL_WRITE && ref.shouldWriteDep()) {
       this.writeRefDep(ref);
     }
 
     if (ref.stage === RefStage.WRITTEN) {
       if (!ref.identifier) {
-        throw new Error('Object is written but have no identifier');
+        throw new Error('Object is written but have no identifier: ' + JSON.stringify(obj));
       }
       this.writeCode(ref.identifier);
       return this;
@@ -238,7 +242,7 @@ export class SourceResolver {
       throw new Error('[writeArray] Ref not found');
     }
 
-    if (ref.stage === RefStage.WILL_WRITE && ref.refCount() > 0) {
+    if (ref.stage === RefStage.WILL_WRITE && ref.shouldWriteDep()) {
       this.writeRefDep(ref);
     }
 
