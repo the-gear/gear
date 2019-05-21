@@ -1,4 +1,5 @@
 import { SourceFragment } from './source';
+import { SourceResolver } from './source-resolver';
 
 export type IdentifierConfig = {
   name?: string;
@@ -29,5 +30,16 @@ export class Identifier extends SourceFragment implements IdentifierConfig {
         this.noRename = config.noRename;
       }
     }
+  }
+
+  resolve(resolver: SourceResolver) {
+    if (this.name) {
+      resolver.reserveIdentifier(this.name);
+      this.resolvedName = this.name;
+    }
+  }
+
+  write(resolver: SourceResolver) {
+    resolver.writeCode(this.resolvedName as string);
   }
 }
