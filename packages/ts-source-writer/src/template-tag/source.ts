@@ -39,12 +39,12 @@ export class SourceFragments extends SourceFragment {
   }
 
   resolve(resolver: SourceResolver) {
-    this.dependencies.forEach((dep) => dep.resolve && dep.resolve(resolver));
+    this.dependencies.forEach((dep) => dep.resolve && resolver.resolve(dep));
     return this;
   }
 
   write(resolver: SourceResolver) {
-    this.dependencies.forEach((dep) => dep.write && dep.write(resolver));
+    this.dependencies.forEach((dep) => dep.write && resolver.write(dep));
   }
 }
 

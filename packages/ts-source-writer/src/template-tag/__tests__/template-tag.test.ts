@@ -43,19 +43,17 @@ describe('`ts` template tag', () => {
   it('should rename identifiers properly', () => {
     const id1 = ts.id('mineId');
     const id2 = ts.id();
-    const id3 = ts.id();
     const src = ts`
       [
-        ${id1}, ${id2}, ${id3},
-        ${id1}, ${id2}, ${id3},
+        ${id1}, ${id2},
+        ${id1}, ${id2},
       ]
     `;
     expect(src.toString().trim()).toMatchInlineSnapshot(`
-      "const a = [
-          mineId$1, mineId$2, mineId,
-          mineId$1, mineId$2, mineId,
-        ];
-        const $ = $$1"
+      "[
+          mineId, $id$1,
+          mineId, $id$1,
+        ]"
     `);
   });
 

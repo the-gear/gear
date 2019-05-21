@@ -36,6 +36,16 @@ export class Identifier extends SourceFragment implements IdentifierConfig {
     if (this.name) {
       resolver.reserveIdentifier(this.name);
       this.resolvedName = this.name;
+    } else if (this.possibleNames && this.possibleNames.length) {
+      for (const name of this.possibleNames) {
+        if (resolver.tryIdentifier(name)) {
+          this.resolvedName = name;
+          return;
+        }
+      }
+      this.resolvedName = resolver.getFreeIdentifier(this.possibleNames[0]);
+    } else {
+      this.resolvedName = resolver.getFreeIdentifier('$id');
     }
   }
 

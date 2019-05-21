@@ -130,6 +130,15 @@ export class SourceResolver {
     seen.delete(data);
   }
 
+  getFreeIdentifier(prefix: string = '$'): string {
+    let i: number = 0;
+    let id: string;
+    do {
+      id = `${prefix}$${(++i).toString(36)}`;
+    } while (!this.tryIdentifier(id));
+    return id;
+  }
+
   getIdentifierFor(ref: Ref) {
     if (ref.identifier) {
       return ref.identifier;
@@ -152,11 +161,7 @@ export class SourceResolver {
       }
     }
 
-    throw new Error(
-      `TODO: [getIdentifierFor] Candidates [${[...ref.suggestedNames.keys()]}] ${JSON.stringify(
-        ref,
-      )}`,
-    );
+    return this.getFreeIdentifier('$' + typeof ref.data);
   }
 
   private captureWrite(cb: () => void): string {
