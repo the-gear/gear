@@ -21,6 +21,12 @@ describe('`ts` template tag', () => {
     );
   });
 
+  it('can handle multiple strings', () => {
+    expect(ts`[${ts.value('abc')}, ${ts.value('abc')}, ${ts.value('abc')}]`.toString()).toEqual(
+      '["abc", "abc", "abc"]',
+    );
+  });
+
   it('can handle bool', () => {
     expect(ts`export const boolConst = ${ts.value(true)};`.toString()).toEqual(
       'export const boolConst = true;',

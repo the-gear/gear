@@ -113,6 +113,14 @@ export function isSafeName(name: string): boolean {
   return reIdentifier.test(name);
 }
 
+export function suggestSafeName(name: string): string {
+  let safeName = name.replace(/[\P{ID_Continue}]/gu, '_');
+  if (isSafeName(safeName)) return safeName;
+  safeName = '$' + safeName;
+  if (isSafeName(safeName)) return safeName;
+  return '$$$';
+}
+
 /**
  * test if name can be used as identifier
  */
@@ -155,9 +163,8 @@ export function getPropertyAccess(name: string | number): string {
 
 export function isPrimitiveValue(
   data: unknown,
-): data is string | number | boolean | bigint | undefined | null {
+): data is number | boolean | bigint | undefined | null {
   switch (typeof data) {
-    case 'string':
     case 'number':
     case 'boolean':
     case 'bigint':
@@ -168,6 +175,7 @@ export function isPrimitiveValue(
       return data === null;
     }
 
+    // case 'string':
     // case 'symbol':
     // case 'function':
     default: {

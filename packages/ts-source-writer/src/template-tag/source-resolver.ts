@@ -1,5 +1,11 @@
 import { Source, isSource } from './source';
-import { isPrimitiveValue, isWithKeys, getPropertyName, isSafeName } from './utils';
+import {
+  isPrimitiveValue,
+  isWithKeys,
+  getPropertyName,
+  isSafeName,
+  suggestSafeName,
+} from './utils';
 
 enum RefStage {
   WILL_WRITE,
@@ -31,7 +37,11 @@ class Ref {
   }
 
   suggestName(name: string) {
-    this.suggestedNames.set(name, (this.suggestedNames.get(name) || 0) + 1);
+    let safeName = name;
+    if (!isSafeName(name)) {
+      safeName = suggestSafeName(name);
+    }
+    this.suggestedNames.set(safeName, (this.suggestedNames.get(safeName) || 0) + 1);
   }
 
   shouldWriteDep(): boolean {
@@ -139,10 +149,11 @@ export class SourceResolver {
     return id;
   }
 
-  getIdentifierFor(ref: Ref) {
+  getIdentifierFor(ref: Ref): string {
     if (ref.identifier) {
       return ref.identifier;
     }
+
     const names = [...ref.suggestedNames.entries()];
     // sort by suggestion count
     names.sort((a, b) => b[1] - a[1]);
@@ -150,18 +161,23 @@ export class SourceResolver {
     for (let i = 0; i < names.length; i++) {
       name = names[i][0];
       const refSet = this.suggestedRefNames.get(name);
-      if (!refSet) {
-        throw new Error(`RefSet not contain entry for '${name}'`);
-      }
-      if (refSet.size === 1 && refSet.has(ref)) {
-        if (this.tryIdentifier(name)) {
-          ref.identifier = name;
-          return name;
+      if (refSet) {
+        if (refSet.size === 1 && refSet.has(ref)) {
+          if (this.tryIdentifier(name)) {
+            ref.identifier = name;
+            return name;
+          }
         }
       }
     }
 
-    return this.getFreeIdentifier('$' + typeof ref.data);
+    if (typeof ref.data === 'string') {
+      ref.identifier = this.getFreeIdentifier('$' + suggestSafeName(ref.data));
+      return ref.identifier;
+    }
+
+    ref.identifier = this.getFreeIdentifier('$' + typeof ref.data);
+    return ref.identifier;
   }
 
   private captureWrite(cb: () => void): string {
@@ -281,9 +297,20 @@ export class SourceResolver {
     throw new Error(`[writeObject] Unhandled case '${ref.identifier}' ${RefStage[ref.stage]}`);
   }
 
-  writeFunction(fn: Function): this {
-    // TODO
-    return this.writeCode(fn.toString());
+  writeString(str: string): this {
+    this.writeCode(JSON.stringify(str));
+    return this;
+  }
+
+  writeSymbol(_sym: symbol): this {
+    throw new Error(`TODO: Symbol`);
+    // Well, I can register symbols on module and emit reference here, but...
+    // return this.writeCode(`undefined /* ${sym.toString().replace(/\*\//g, '* /')} */`);
+  }
+
+  writeFunction(_function: Function): this {
+    throw new Error(`TODO: Function`);
+    // return this.writeCode(fn.toString());
   }
 
   writeValue(val: unknown): this {
@@ -340,16 +367,6 @@ export class SourceResolver {
     if (n === Number.POSITIVE_INFINITY) return this.writeCode('Number.POSITIVE_INFINITY');
     if (n === Number.NEGATIVE_INFINITY) return this.writeCode('Number.NEGATIVE_INFINITY');
     return this.writeCode(n.toString());
-  }
-
-  writeString(str: string): this {
-    return this.writeCode(JSON.stringify(str));
-  }
-
-  writeSymbol(_sym: symbol): this {
-    // Well, I can register symbols on module and emit reference here, but...
-    // return this.writeCode(`undefined /* ${sym.toString().replace(/\*\//g, '* /')} */`);
-    throw new Error(`TODO: Symbol`);
   }
 
   writeUndefined() {
