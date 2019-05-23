@@ -52,6 +52,11 @@ export interface IPrimitiveSerializer<T = string> extends ISerializer<T> {
   serializeObject(value: object): T;
 
   /**
+   * serialize Object or Array
+   */
+  serializeObjectReference(value: object): T;
+
+  /**
    * serialize String
    */
   serializeString(value: string): T;
@@ -95,8 +100,7 @@ export abstract class AbstractSerializer<T = string> implements IPrimitiveSerial
         return this.serializeUndefined();
       case 'object':
         if (value === null) return this.serializeNull();
-        if (Array.isArray(value)) return this.serializeArray(value);
-        return this.serializeObject(value);
+        return this.serializeObjectReference(value);
       case 'function':
         return this.serializeFunction(value);
       default:
@@ -115,6 +119,11 @@ export abstract class AbstractSerializer<T = string> implements IPrimitiveSerial
   abstract serializeObject(value: object): T;
   abstract serializeString(value: string): T;
   abstract serializeUndefined(): T;
+
+  serializeObjectReference(value: object): T {
+    if (Array.isArray(value)) return this.serializeArray(value);
+    return this.serializeObject(value);
+  }
 
   serializeFunction(_function: Function): T {
     throw new TypeError(`${this.constructor.name}.serializeFunction is not defined`);

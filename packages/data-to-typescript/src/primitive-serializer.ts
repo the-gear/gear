@@ -4,7 +4,14 @@ import { getPropertyPath, getPropertyName } from './utils';
 export type WithProperties = object | Function | unknown[];
 
 export class PrimitiveSerializer extends AbstractSerializer<string> {
+  /**
+   * Track for current object being written
+   */
   protected parents: WithProperties[] = [];
+
+  /**
+   * Track for current object _key_ being written
+   */
   protected parentKeys: PropertyKey[] = [];
 
   serializeBigInt(bigint: bigint): string {
