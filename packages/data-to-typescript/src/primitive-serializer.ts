@@ -70,7 +70,7 @@ export class PrimitiveSerializer extends AbstractSerializer<string> {
     if (recursiveIndex >= 0) {
       return this.serializeRecursion(
         value,
-        this.parentKeys,
+        [...this.parentKeys, key],
         this.parentKeys.slice(0, recursiveIndex),
       );
     }

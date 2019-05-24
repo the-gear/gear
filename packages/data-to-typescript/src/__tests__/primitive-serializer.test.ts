@@ -76,22 +76,22 @@ describe('PrimitiveSerializer', () => {
     const a = { ref: {} };
     a.ref = a;
     expect(() => serialize(a)).toThrowErrorMatchingInlineSnapshot(
-      `"Recursion detected: $.ref = $"`,
+      `"Recursion detected: $.ref.ref = $"`,
     );
 
     const b = { a: { b: { c: a } } };
     expect(() => serialize(b)).toThrowErrorMatchingInlineSnapshot(
-      `"Recursion detected: $.a.b.c.ref = $.a.b.c"`,
+      `"Recursion detected: $.a.b.c.ref.ref = $.a.b.c"`,
     );
 
     const arr1 = [a];
     expect(() => serialize(arr1)).toThrowErrorMatchingInlineSnapshot(
-      `"Recursion detected: $[0].ref = $[0]"`,
+      `"Recursion detected: $[0].ref.ref = $[0]"`,
     );
 
     const arr2 = [, b, a];
     expect(() => serialize(arr2)).toThrowErrorMatchingInlineSnapshot(
-      `"Recursion detected: $[1].a.b.c.ref = $[1].a.b.c"`,
+      `"Recursion detected: $[1].a.b.c.ref.ref = $[1].a.b.c"`,
     );
   });
 });

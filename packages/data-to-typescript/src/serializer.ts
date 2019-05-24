@@ -103,12 +103,8 @@ export abstract class AbstractSerializer<T = string> implements IPrimitiveSerial
         return this.serializeObjectReference(value);
       case 'function':
         return this.serializeFunction(value);
-      default:
-        /* istanbul ignore next */
-        throw new TypeError(
-          `${this.constructor.name}.serialize cannot handle typeof ${typeof value}`,
-        );
     }
+    throw new TypeError(`${this.constructor.name}.serialize cannot handle typeof ${typeof value}`);
   }
 
   abstract serializeArray(value: unknown[]): T;
