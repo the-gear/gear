@@ -27,10 +27,10 @@
   },
   "scripts": {
     "build": "tsc --build",
-    "clean": "tsc --clean",
+    "clean": "tsc --build --clean",
     "dev": "yarn watch",
     "test": "jest",
-    "watch": "tsc --watch"
+    "watch": "tsc --build --watch"
   },
   "dependencies": {
     "rollup": "^1.12.4"
