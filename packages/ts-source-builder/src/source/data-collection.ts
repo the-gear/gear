@@ -25,7 +25,7 @@ export class DataRef implements DataRefConfig {
 
   getIdentifier(ident?: IdentifierOptions): Identifier {
     if (this.identifiers.length) {
-      console.log('IDENTIFIERS:', this.identifiers.map((id) => id.name));
+      // console.log('IDENTIFIERS:', this.identifiers.map((id) => id.name));
       return this.identifiers[0];
     }
     const id = new Identifier(ident);

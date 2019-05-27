@@ -17,7 +17,9 @@ describe('value', () => {
     };
     recursiveObj.obj = recursiveObj;
     const recursiveObjValue = value(recursiveObj);
-    expect(recursiveObjValue).toMatchInlineSnapshot(`({obj: {} /* recursive ? */})`);
-    // expect(valEval(recursiveObjValue)).toEqual(recursiveObj);
+    expect(recursiveObjValue).toMatchInlineSnapshot(
+      `({obj: {} /* recursive undefined === null */})`,
+    );
+    expect(valEval(recursiveObjValue)).toEqual(recursiveObj);
   });
 });

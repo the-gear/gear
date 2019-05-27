@@ -4,7 +4,8 @@ import { runInNewContext } from 'vm';
 const str = 'abc';
 const obj = { int: 1, str, nullish: null, undef: undefined };
 const arr = [obj, obj, 1, str, null, {}, []];
-arr.push(arr);
+const recArr: any[] = [obj];
+recArr.push(recArr);
 
 const rec1 = { rec2: {}, rec3: {} };
 const rec2 = { rec1 };
@@ -28,30 +29,36 @@ const serializeThenEval = (exports: Exports) => evalModule(serialize(exports));
 
 describe('JsDataWriter', () => {
   it('can export primitive values', () => {
-    expect(serializeThenEval(obj)).toMatchSnapshot();
+    expect(serializeThenEval(obj)).toEqual(obj);
   });
 
   it('can export object', () => {
-    expect(serializeThenEval({ obj })).toMatchSnapshot();
+    const exports = { obj };
+    expect(serializeThenEval(exports)).toEqual(exports);
   });
 
   it('can export array', () => {
-    expect(serializeThenEval({ arr })).toMatchSnapshot();
+    const exports = { arr };
+    expect(serializeThenEval(exports)).toEqual(exports);
   });
 
-  it('can export array', () => {
-    expect(serializeThenEval({ obj, arr })).toMatchSnapshot();
+  it('can export object and array', () => {
+    const exports = { obj, arr };
+    expect(serializeThenEval(exports)).toEqual(exports);
   });
 
   it('can export collection and children', () => {
-    expect(serializeThenEval({ collection, child1 })).toMatchSnapshot();
+    const exports = { collection, child1 };
+    expect(serializeThenEval(exports)).toEqual(exports);
   });
 
   it('can export recursive object', () => {
-    expect(serializeThenEval({ rec1, rec2 })).toMatchSnapshot();
+    const exports = { rec1, rec2 };
+    expect(serializeThenEval(exports)).toEqual(exports);
   });
 
-  it('can export recursive object', () => {
-    expect(serializeThenEval({ rec1, rec2, recAlias1: rec1, recAlias2: rec2 })).toMatchSnapshot();
+  it('can export recursive array', () => {
+    const exports = { recArr };
+    expect(serializeThenEval(exports)).toEqual(exports);
   });
 });

@@ -7,6 +7,7 @@
   "references": [
     { "path": "./cli" },
     { "path": "./graphql-types" },
+    { "path": "./data2source-code" },
     { "path": "./rollup-plugin-gear-graphql" }
   ]
 }

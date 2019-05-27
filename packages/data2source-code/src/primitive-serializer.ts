@@ -14,34 +14,34 @@ export class PrimitiveSerializer extends AbstractSerializer<string> {
    */
   protected parentKeys: PropertyKey[] = [];
 
-  serializeBigInt(bigint: bigint): string {
+  protected serializeBigInt(bigint: bigint): string {
     return `BigInt('${bigint.toString()}')`;
   }
 
-  serializeBoolean(bool: boolean): string {
+  protected serializeBoolean(bool: boolean): string {
     return bool ? 'true' : 'false';
   }
 
-  serializeString(string: string): string {
+  protected serializeString(string: string): string {
     return JSON.stringify(string);
   }
 
-  serializeUndefined(): string {
+  protected serializeUndefined(): string {
     return 'undefined';
   }
 
-  serializeNull(): string {
+  protected serializeNull(): string {
     return 'null';
   }
 
-  serializeNumber(n: number): string {
+  protected serializeNumber(n: number): string {
     if (Number.isNaN(n)) return 'NaN';
     if (n === Number.POSITIVE_INFINITY) return 'Infinity';
     if (n === Number.NEGATIVE_INFINITY) return '-Infinity';
     return n.toString();
   }
 
-  serializeRecursion(
+  protected serializeRecursion(
     _value: unknown,
     longPath: PropertyKey[],
     shortPath: PropertyKey[],
@@ -61,7 +61,7 @@ export class PrimitiveSerializer extends AbstractSerializer<string> {
    * @param {string | number} key property name or index
    * @param {object | object[]} parent object
    */
-  serializePropertyValue(
+  protected serializePropertyValue(
     value: unknown,
     key: PropertyKey,
     parent: WithProperties,
@@ -85,14 +85,14 @@ export class PrimitiveSerializer extends AbstractSerializer<string> {
     }
   }
 
-  serializeArray(array: unknown[]): string {
+  protected serializeArray(array: unknown[]): string {
     // array map have signature (value: T, index: number, array: T[])
     // which is same as type of `serializePropertyValue`
     // second `this` is instead of `serializePropertyValue.bind(this)`
     return '[' + array.map(this.serializePropertyValue, this).join(',') + ']';
   }
 
-  serializeObject(obj: object): string {
+  protected serializeObject(obj: object): string {
     const keyVals = [];
     for (const [key, val] of Object.entries(obj)) {
       const serializedValue = this.serializePropertyValue(val, key, obj);

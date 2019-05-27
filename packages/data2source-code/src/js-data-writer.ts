@@ -29,7 +29,11 @@ class JsSerializer extends ReferentialSerializer {
     super();
   }
 
-  serializeRecursion(value: unknown, longPath: PropertyKey[], shortPath: PropertyKey[]): string {
+  protected serializeRecursion(
+    value: unknown,
+    longPath: PropertyKey[],
+    shortPath: PropertyKey[],
+  ): string {
     const ref = this.writer.refs.get(value);
     /* istanbul ignore next */
     if (!ref) throw new Error('Unhandled recursion');

@@ -1,5 +1,5 @@
 {
-  "name": "@the-gear/data-to-typescript",
+  "name": "data2source-code",
   "version": "0.0.0",
   "private": true,
   "description": "Generate TypeScript Source programmatically",

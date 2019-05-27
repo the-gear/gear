@@ -94,44 +94,6 @@ Object {
 }
 `;
 
-exports[`JsDataWriter can export collection and children 1`] = `
-Object {
-  "child1": Object {
-    "name": "child1",
-  },
-  "collection": Object {
-    "children": Array [
-      Object {
-        "name": "child1",
-      },
-      Object {
-        "name": "child2",
-      },
-    ],
-  },
-}
-`;
-
-exports[`JsDataWriter can export object 1`] = `
-Object {
-  "obj": Object {
-    "int": 1,
-    "nullish": null,
-    "str": "abc",
-    "undef": undefined,
-  },
-}
-`;
-
-exports[`JsDataWriter can export primitive values 1`] = `
-Object {
-  "int": 1,
-  "nullish": null,
-  "str": "abc",
-  "undef": undefined,
-}
-`;
-
 exports[`JsDataWriter can export recursive object 1`] = `
 Object {
   "rec1": Object {
