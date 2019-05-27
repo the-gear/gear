@@ -3,10 +3,10 @@
   "name": "@the-gear/gear",
   "description": "The ⚙️ Gear `monorepo`",
   "devDependencies": {
-    "@types/jest": "^24.0.13",
-    "@types/node": "^12.0.2",
+    "@types/jest": "^24",
+    "@types/node": "^12",
     "git-cz": "^3.0.1",
-    "jest": "^24.8.0",
+    "jest": "^24",
     "jest-junit": "^6.4.0",
     "lerna": "^3.14.1",
     "prettier": "^1.17.1",

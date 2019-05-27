@@ -1,5 +1,5 @@
 import { ReferentialSerializer } from './referential-serializer';
-import { isWithKeys, getPropertyPath } from './utils';
+import { isWithKeys, getPropertyPath, getPropertyAccess } from './utils';
 // import { WithProperties } from './primitive-serializer';
 
 export type Exports = { [keys: string]: unknown };
@@ -31,6 +31,7 @@ class JsSerializer extends ReferentialSerializer {
 
   serializeRecursion(value: unknown, longPath: PropertyKey[], shortPath: PropertyKey[]): string {
     const ref = this.writer.refs.get(value);
+    /* istanbul ignore next */
     if (!ref) throw new Error('Unhandled recursion');
     const name = ref.name;
     const long = getPropertyPath(name, ...longPath);
@@ -63,6 +64,8 @@ export class JsDataWriter {
   exports = new Map<string, unknown>();
   recursions: string[] = [];
 
+  constructor(public moduleType: 'ESM' | 'CJS' = 'ESM') {}
+
   addExports(exports: Exports): this {
     for (const [name, value] of Object.entries(exports)) {
       this.add(name, value, true);
@@ -82,8 +85,8 @@ export class JsDataWriter {
 
   add(name: string, value: unknown, isExport: boolean = true): Ref {
     if (isExport) {
-      if (this.exports.has('name')) {
-        const definedExport = this.exports.get('name');
+      if (this.exports.has(name)) {
+        const definedExport = this.exports.get(name);
         if (!Object.is(definedExport, value)) {
           throw new TypeError(`Cannot redeclare export ${name}`);
         }
@@ -116,6 +119,29 @@ export class JsDataWriter {
     this.recursions = [];
   }
 
+  protected writeConst(name: string, value: unknown): string {
+    return `const ${name} = ${this.serializer.serialize(value)};`;
+  }
+
+  protected writeExportConst(name: string, value: unknown): string {
+    let exportStr: string;
+    switch (this.moduleType) {
+      case 'ESM': {
+        exportStr = `export const ${name}`;
+        break;
+      }
+      case 'CJS': {
+        exportStr = `const ${name} = module.exports${getPropertyAccess(name)}`;
+        break;
+      }
+      default: {
+        /* istanbul ignore next */
+        throw new TypeError(`Unknown module type: '${this.moduleType}'.`);
+      }
+    }
+    return `${exportStr} = ${this.serializer.serialize(value)};`;
+  }
+
   toString(): string {
     const code = [];
     for (const [value, ref] of this.refs) {
@@ -123,17 +149,17 @@ export class JsDataWriter {
       if (exports.length) {
         const name = exports[0];
         ref.name = name;
-        code.push(`export const ${name} = ${this.serializer.serialize(value)};`);
+        code.push(this.writeExportConst(name, value));
         this.flushRecursion(code);
         this.serializer.setReplace(value, name);
         for (let i = 1; i < exports.length; i++) {
-          code.push(`export const ${exports[i]} = ${this.serializer.serialize(value)};`);
+          code.push(this.writeExportConst(exports[i], value));
         }
         code.push();
       } else {
         if (ref.seen > 1) {
           const name = ref.name;
-          code.push(`const ${name} = ${this.serializer.serialize(value)};`);
+          code.push(this.writeConst(name, value));
           this.serializer.setReplace(value, name);
         }
       }

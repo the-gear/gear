@@ -104,6 +104,7 @@ export abstract class AbstractSerializer<T = string> implements IPrimitiveSerial
       case 'function':
         return this.serializeFunction(value);
     }
+    /* istanbul ignore next */
     throw new TypeError(`${this.constructor.name}.serialize cannot handle typeof ${typeof value}`);
   }
 

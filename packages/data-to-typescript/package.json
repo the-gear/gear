@@ -31,5 +31,8 @@
     "dev": "yarn watch",
     "test": "jest",
     "watch": "tsc --watch"
+  },
+  "dependencies": {
+    "rollup": "^1.12.4"
   }
 }
