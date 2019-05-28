@@ -25,11 +25,11 @@ const serialize = (exports: Exports) => new JsDataWriter().addExports(exports).t
 describe('JsDataWriter', () => {
   it('can export primitive values', () => {
     expect(serialize(obj)).toMatchInlineSnapshot(`
-      "export const int = 1;
-      export const str = \\"abc\\";
-      export const nullish = null;
-      export const undef = undefined;"
-    `);
+                  "export const int = 1;
+                  export const str = \\"abc\\";
+                  export const nullish = null;
+                  export const undef = undefined;"
+            `);
   });
 
   it('can export object', () => {
@@ -40,42 +40,42 @@ describe('JsDataWriter', () => {
 
   it('can export array', () => {
     expect(serialize({ arr })).toMatchInlineSnapshot(`
-      "const arr$0 = {int:1,str:\\"abc\\",nullish:null,undef:undefined};
-      export const arr = [arr$0,arr$0,1,\\"abc\\",null,{},[]];"
-    `);
+                  "const arr$0 = {int:1,str:\\"abc\\",nullish:null,undef:undefined};
+                  export const arr = [arr$0,arr$0,1,\\"abc\\",null,{},[]];"
+            `);
   });
 
   it('can export array', () => {
     expect(serialize({ obj, arr })).toMatchInlineSnapshot(`
-      "export const obj = {int:1,str:\\"abc\\",nullish:null,undef:undefined};
-      export const arr = [obj,obj,1,\\"abc\\",null,{},[]];"
-    `);
+                  "export const obj = {int:1,str:\\"abc\\",nullish:null,undef:undefined};
+                  export const arr = [obj,obj,1,\\"abc\\",null,{},[]];"
+            `);
   });
 
   it('can export collection and children', () => {
     expect(serialize({ collection, child1 })).toMatchInlineSnapshot(`
-      "export const child1 = {name:\\"child1\\"};
-      export const collection = {children:[child1,{name:\\"child2\\"}]};"
-    `);
+                  "export const child1 = {name:\\"child1\\"};
+                  export const collection = {children:[child1,{name:\\"child2\\"}]};"
+            `);
   });
 
   it('can export recursive object', () => {
     expect(serialize({ rec1, rec2 })).toMatchInlineSnapshot(`
-      "export const rec2 = {rec1:{rec2:{ /* rec2 */ },rec3:{ /* rec2 */ }}};
-      rec2.rec1.rec2 = rec2;
-      rec2.rec1.rec3 = rec2;
+      "export const rec2 = {rec1:{rec2:{ /* rec2.rec2 */ },rec3:{ /* rec2.rec2 */ }}};
+      rec2.rec2.rec1.rec2 = rec2.rec2;
+      rec2.rec2.rec1.rec3 = rec2.rec2;
       export const rec1 = {rec2:rec2,rec3:rec2};"
     `);
   });
 
   it('can export recursive object', () => {
     expect(serialize({ rec1, rec2, recAlias1: rec1, recAlias2: rec2 })).toMatchInlineSnapshot(`
-      "export const rec2 = {rec1:{rec2:{ /* rec2 */ },rec3:{ /* rec2 */ }}};
-      rec2.rec1.rec2 = rec2;
-      rec2.rec1.rec3 = rec2;
-      export const recAlias2 = rec2;
-      export const rec1 = {rec2:rec2,rec3:rec2};
-      export const recAlias1 = rec1;"
-    `);
+            "export const rec2 = {rec1:{rec2:{ /* rec2.rec2 */ },rec3:{ /* rec2.rec2 */ }}};
+            rec2.rec2.rec1.rec2 = rec2.rec2;
+            rec2.rec2.rec1.rec3 = rec2.rec2;
+            export const recAlias2 = rec2;
+            export const rec1 = {rec2:rec2,rec3:rec2};
+            export const recAlias1 = rec1;"
+        `);
   });
 });

@@ -1,0 +1,71 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`JsDataWriter can export recursive object 1`] = `
+Object {
+  "rec1": Object {
+    "rec2": Object {
+      "rec1": Object {
+        "rec2": [Circular],
+        "rec3": [Circular],
+      },
+    },
+    "rec3": Object {
+      "rec1": Object {
+        "rec2": [Circular],
+        "rec3": [Circular],
+      },
+    },
+  },
+  "rec2": Object {
+    "rec1": Object {
+      "rec2": [Circular],
+      "rec3": [Circular],
+    },
+  },
+}
+`;
+
+exports[`JsDataWriter can export recursive object 2`] = `
+Object {
+  "rec1": Object {
+    "rec2": Object {
+      "rec1": Object {
+        "rec2": [Circular],
+        "rec3": [Circular],
+      },
+    },
+    "rec3": Object {
+      "rec1": Object {
+        "rec2": [Circular],
+        "rec3": [Circular],
+      },
+    },
+  },
+  "rec2": Object {
+    "rec1": Object {
+      "rec2": [Circular],
+      "rec3": [Circular],
+    },
+  },
+  "recAlias1": Object {
+    "rec2": Object {
+      "rec1": Object {
+        "rec2": [Circular],
+        "rec3": [Circular],
+      },
+    },
+    "rec3": Object {
+      "rec1": Object {
+        "rec2": [Circular],
+        "rec3": [Circular],
+      },
+    },
+  },
+  "recAlias2": Object {
+    "rec1": Object {
+      "rec2": [Circular],
+      "rec3": [Circular],
+    },
+  },
+}
+`;

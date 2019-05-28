@@ -61,7 +61,7 @@ export class PrimitiveSerializer extends AbstractSerializer<string> {
    * @param {string | number} key property name or index
    * @param {object | object[]} parent object
    */
-  protected serializePropertyValue(
+  serializePropertyValue(
     value: unknown,
     key: PropertyKey,
     parent: WithProperties,

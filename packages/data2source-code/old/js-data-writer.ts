@@ -8,6 +8,7 @@ class Ref {
   seen = 1;
   exports: string[] = [];
   name: string;
+  recursive: boolean = false;
 
   constructor(name: string) {
     this.name = name;
@@ -77,17 +78,17 @@ export class JsDataWriter {
     return this;
   }
 
-  addChildren(name: string, parent: unknown) {
+  addChildren(name: string, parent: unknown, ...parents: unknown[]) {
     if (isWithKeys(parent)) {
       for (const [key, value] of Object.entries(parent)) {
         if (isWithKeys(value)) {
-          this.add(`${name}$${key}`, value, false);
+          this.add(`${name}$${key}`, value, false, parent, ...parents);
         }
       }
     }
   }
 
-  add(name: string, value: unknown, isExport: boolean = true): Ref {
+  add(name: string, value: unknown, isExport: boolean = true, ...parents: unknown[]): Ref {
     if (isExport) {
       if (this.exports.has(name)) {
         const definedExport = this.exports.get(name);
@@ -101,18 +102,21 @@ export class JsDataWriter {
 
     const ref = this.refs.get(value);
     if (ref) {
+      if (parents.includes(value)) {
+        ref.recursive = true;
+      }
       if (isExport) ref.export(name);
       return ref.ref();
     } else {
       const ref = new Ref(name);
       if (isExport) ref.export(name);
       this.refs.set(value, ref);
-      this.addChildren(name, value);
-
-      // ensure that any children will be before its parent
-      this.refs.delete(value);
-      this.refs.set(value, ref);
-
+      this.addChildren(name, value, parents);
+      if (!ref.recursive) {
+        // ensure that any children will be before its parent
+        this.refs.delete(value);
+        this.refs.set(value, ref);
+      }
       return ref;
     }
   }
@@ -124,7 +128,7 @@ export class JsDataWriter {
   }
 
   protected writeConst(name: string, value: unknown): string {
-    return `const ${name} = ${this.serializer.serialize(value)};`;
+    return `const ${name} = ${this.serializer.serializePropertyValue(value, name, this)};`;
   }
 
   protected writeExportConst(name: string, value: unknown): string {
@@ -143,7 +147,7 @@ export class JsDataWriter {
         throw new TypeError(`Unknown module type: '${this.moduleType}'.`);
       }
     }
-    return `${exportStr} = ${this.serializer.serialize(value)};`;
+    return `${exportStr} = ${this.serializer.serializePropertyValue(value, name, this)};`;
   }
 
   toString(): string {

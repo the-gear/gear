@@ -1,97 +1,55 @@
-import { PrimitiveSerializer } from '../primitive-serializer';
-import { runInNewContext } from 'vm';
+import { PrimitiveSerializer } from '../data-converter';
+// import { runInNewContext } from 'vm';
 
-const serialize = (value: unknown) => new PrimitiveSerializer().serialize(value);
-const serializeThenEval = (value: unknown) => runInNewContext('(' + serialize(value) + ')');
+const serialize = (value: unknown) => new PrimitiveSerializer().convert(value);
+// const evalStr = (code: string) => runInNewContext(code);
+// const serializeThenEval = (value: unknown) => evalStr('(' + serialize(value) + ')');
+
+// const serialize = (exports: Exports) => new JsDataWriter().addExports(exports).toString();
 
 describe('PrimitiveSerializer', () => {
-  it('can be imported', () => {
-    expect(PrimitiveSerializer).toBeDefined();
-  });
-
-  it('serialize primitives', () => {
-    expect(serialize(123)).toMatchInlineSnapshot(`"123"`);
-    expect(serialize(NaN)).toMatchInlineSnapshot(`"NaN"`);
-    expect(serialize(Infinity)).toMatchInlineSnapshot(`"Infinity"`);
-    expect(serialize(-Infinity)).toMatchInlineSnapshot(`"-Infinity"`);
-    expect(serialize('abc')).toMatchInlineSnapshot(`"\\"abc\\""`);
-    expect(serialize(true)).toMatchInlineSnapshot(`"true"`);
-    expect(serialize(false)).toMatchInlineSnapshot(`"false"`);
-    expect(serialize(null)).toMatchInlineSnapshot(`"null"`);
-    expect(serialize(undefined)).toMatchInlineSnapshot(`"undefined"`);
-  });
-
-  it('serialize primitives as evaluable', () => {
-    expect(serializeThenEval(123)).toStrictEqual(123);
-    expect(serializeThenEval(NaN)).toBeNaN();
-    expect(serializeThenEval(Infinity)).toStrictEqual(Infinity);
-    expect(serializeThenEval(-Infinity)).toStrictEqual(-Infinity);
-    expect(serializeThenEval('abc')).toStrictEqual('abc');
-    expect(serializeThenEval(true)).toStrictEqual(true);
-    expect(serializeThenEval(false)).toStrictEqual(false);
-    expect(serializeThenEval(null)).toBeNull();
-    expect(serializeThenEval(undefined)).toBeUndefined();
-  });
-
-  it('can serialize empty object', () => {
-    expect(serialize({})).toMatchInlineSnapshot(`"{}"`);
-  });
-
-  it('can serialize empty array', () => {
-    expect(serialize([])).toMatchInlineSnapshot(`"[]"`);
-  });
-
-  it('can serialize objects and arrays', () => {
-    const obj = { int: 1, str: 'abc', null: null };
-    const arr = [1, 'abc', null, {}, [], obj];
-    expect(serializeThenEval(obj)).toEqual(obj);
-    expect(serializeThenEval(arr)).toEqual(arr);
-  });
-
-  it('can serialize undefined', () => {
-    expect(serialize(undefined)).toMatchInlineSnapshot(`"undefined"`);
-    expect(serialize([undefined])).toMatchInlineSnapshot(`"[undefined]"`);
-    expect(serialize({ undef: undefined })).toMatchInlineSnapshot(`"{undef:undefined}"`);
-  });
-
-  it('can serialize BigInt', () => {
-    expect(serialize(BigInt('123456789012345678901234567890'))).toMatchInlineSnapshot(
-      `"BigInt('123456789012345678901234567890')"`,
+  it('can convert primitive values', () => {
+    const obj = {
+      int: 1,
+      str: 'string',
+      bigint: BigInt('618970019642690137449562111'),
+      yes: true,
+      no: false,
+      nullish: null,
+      undef: undefined,
+      nan: NaN,
+      inf: Infinity,
+      ninf: -Infinity,
+    };
+    expect(serialize(obj)).toMatchInlineSnapshot(
+      `"{int:1,str:\\"string\\",bigint:BigInt('618970019642690137449562111'),yes:true,no:false,nullish:null,undef:void 0,nan:NaN,inf:Infinity,ninf:-Infinity}"`,
     );
   });
 
-  it('throws on function', () => {
-    expect(() => serialize(() => {})).toThrowErrorMatchingInlineSnapshot(
-      `"PrimitiveSerializer.serializeFunction is not defined"`,
+  it('cannot convert function', () => {
+    function fn() {}
+    expect(() => serialize(fn)).toThrowErrorMatchingInlineSnapshot(`"Not implemented: function"`);
+  });
+
+  it('cannot convert symbol', () => {
+    expect(() => serialize(Symbol.for('test'))).toThrowErrorMatchingInlineSnapshot(
+      `"Not implemented: symbol"`,
     );
   });
 
-  it('throws on symbol', () => {
-    expect(() => serialize(Symbol())).toThrowErrorMatchingInlineSnapshot(
-      `"PrimitiveSerializer.serializeSymbol is not defined"`,
+  it('cannot convert circular object', () => {
+    const circObject = { circObject: {} };
+    circObject.circObject = circObject;
+    expect(() => serialize(circObject)).toThrowErrorMatchingInlineSnapshot(
+      `"Circular value detected"`,
     );
   });
 
-  it('throws on recursion', () => {
-    const a = { ref: {} };
-    a.ref = a;
-    expect(() => serialize(a)).toThrowErrorMatchingInlineSnapshot(
-      `"Recursion detected: $.ref.ref = $"`,
-    );
-
-    const b = { a: { b: { c: a } } };
-    expect(() => serialize(b)).toThrowErrorMatchingInlineSnapshot(
-      `"Recursion detected: $.a.b.c.ref.ref = $.a.b.c"`,
-    );
-
-    const arr1 = [a];
-    expect(() => serialize(arr1)).toThrowErrorMatchingInlineSnapshot(
-      `"Recursion detected: $[0].ref.ref = $[0]"`,
-    );
-
-    const arr2 = [, b, a];
-    expect(() => serialize(arr2)).toThrowErrorMatchingInlineSnapshot(
-      `"Recursion detected: $[1].a.b.c.ref.ref = $[1].a.b.c"`,
+  it('cannot convert circular array', () => {
+    const circArray: unknown[] = [];
+    circArray.push(circArray);
+    expect(() => serialize(circArray)).toThrowErrorMatchingInlineSnapshot(
+      `"Circular value detected"`,
     );
   });
 });

@@ -5,6 +5,8 @@ import { PrimitiveSerializer } from './primitive-serializer';
  */
 export class ReferentialSerializer extends PrimitiveSerializer {
   protected replaces = new Map<unknown, string>();
+  private writting = new Set<unknown>();
+  private written = new Set<unknown>();
 
   setReplace(value: unknown, name: string): void {
     this.replaces.set(value, name);
@@ -13,7 +15,19 @@ export class ReferentialSerializer extends PrimitiveSerializer {
   protected serializeObjectReference(value: object): string {
     const replace = this.replaces.get(value);
     if (replace) return replace;
-    return super.serializeObjectReference(value);
+    if (this.writting.has(value)) {
+      // throw new TypeError('Value is writting. Recursion?');
+    }
+    if (this.written.has(value)) {
+      // throw new TypeError(
+      //   'Value should be written second time. This will break referential integrity',
+      // );
+    }
+    this.writting.add(value);
+    const result = super.serializeObjectReference(value);
+    this.writting.delete(value);
+    this.written.add(value);
+    return result;
   }
 
   protected serializeString(string: string): string {
