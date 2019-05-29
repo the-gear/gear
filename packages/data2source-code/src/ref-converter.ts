@@ -196,7 +196,7 @@ export class RefConverter extends PrimitiveConverters<Ref, Ref[]> {
     if (value === null) return ObjectRef.null;
 
     return this.objectPool.ref(value, (ref) => {
-      if (Array.isArray(value)) ref = new ArrayRef(value, this);
+      if (Array.isArray(value)) ref = new ArrayRef(value);
       return ref;
     });
   }
