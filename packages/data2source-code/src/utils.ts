@@ -241,3 +241,19 @@ export function isWithKeys(data: unknown): data is {} | Function {
     }
   }
 }
+
+type ComparatorSelector<T> = (value: T, other: T) => number | string | null;
+
+export function createComparator<T>(...selectors: ComparatorSelector<T>[]) {
+  return (a: T, b: T) => {
+    for (const selector of selectors) {
+      const valA = selector(a, b);
+      if (valA === null) continue;
+      const valB = selector(b, a);
+      if (valB === null || valA == valB) continue;
+      if (valA > valB) return 1;
+      if (valA < valB) return -1;
+    }
+    return 0;
+  };
+}

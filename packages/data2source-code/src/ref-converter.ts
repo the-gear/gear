@@ -3,23 +3,10 @@ import { getPropertyName } from './utils';
 
 export abstract class Value {
   refCount: number = 1;
-  name: string | null = null;
 
   ref(): this {
     this.refCount++;
     return this;
-  }
-
-  setName(name: string): this {
-    if (this.name) {
-      throw new Error(`Name already set as '${this.name}'. New name '${name}' requested`);
-    }
-    this.name = name;
-    return this;
-  }
-
-  toString() {
-    return this.toExpression();
   }
 
   abstract toExpression(): string;
