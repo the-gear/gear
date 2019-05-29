@@ -12,6 +12,7 @@ describe('DataCodeBlock', () => {
     const obj = { int: 1, str: 'string', nullish: null, undef: undefined };
     const code = new DataCodeBlock();
     code.addConst('obj', obj);
+    expect(code.toString()).toMatchInlineSnapshot(`""`);
   });
 
   it('can export direct circular object', () => {

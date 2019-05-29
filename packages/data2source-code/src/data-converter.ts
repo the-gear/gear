@@ -14,7 +14,7 @@ export interface Converter<T, Context = void> {
   convert(value: unknown, ctx: Context): T;
 }
 
-export interface TypeofConverters<T, Context = void> extends Converter<T, Context> {
+export interface TypeofConverters<T, Context = unknown[]> extends Converter<T, Context> {
   ['string'](value: string, ctx: Context): T;
   ['number'](value: number, ctx: Context): T;
   ['bigint'](value: bigint, ctx: Context): T;
@@ -25,7 +25,7 @@ export interface TypeofConverters<T, Context = void> extends Converter<T, Contex
   ['function'](value: Function, ctx: Context): T;
 }
 
-export abstract class PrimitiveConverters<T, Context = void>
+export abstract class PrimitiveConverters<T, Context = unknown[]>
   implements TypeofConverters<T, Context> {
   convert(value: unknown, ctx: Context): T {
     const type = typeof value;

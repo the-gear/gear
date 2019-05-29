@@ -3,9 +3,17 @@ import { getPropertyName } from './utils';
 
 export abstract class Ref {
   refCount: number = 1;
+  name: string | null = null;
 
   ref(): this {
     this.refCount++;
+    return this;
+  }
+
+  setName(name: string): this {
+    if (this.name) {
+      throw new Error(`Name already set as '${this.name}'. New name '${name}' requested`);
+    }
     return this;
   }
 
@@ -160,50 +168,77 @@ export class RefPool<T extends ConstRef> {
   }
 }
 
-export class RefConverter extends PrimitiveConverters<Ref, Ref[]> {
+export class RefConverter extends PrimitiveConverters<Ref, unknown[]> {
   private stringPool = new RefPool(StringRef);
   private objectPool = new RefPool(ObjectRef);
+  private allRefs = new Set<Ref>();
 
-  convert(value: unknown, ctx: Ref[] = []): Ref {
-    return super.convert(value, ctx);
+  addConst(name: string, value: unknown): Ref {
+    const ref = this.convert(value).setName(name);
+    return ref;
   }
 
-  ['string'](value: string, _ctx: Ref[]): StringRef {
+  convert(value: unknown, ctx: unknown[] = []): Ref {
+    if (ctx.includes(value)) {
+      throw new Error('Circular value detected');
+    }
+    const ref = super.convert(value, ctx);
+    this.allRefs.add(ref);
+    return ref;
+  }
+
+  ['string'](value: string, _ctx: unknown[]): StringRef {
     return this.stringPool.ref(value);
   }
 
-  ['number'](value: number, _ctx: Ref[]): Ref {
+  ['number'](value: number, _ctx: unknown[]): Ref {
     return new NumberRef(value);
   }
 
-  ['bigint'](value: bigint, _ctx: Ref[]): Ref {
+  ['bigint'](value: bigint, _ctx: unknown[]): Ref {
     return new BigIntRef(value);
   }
 
-  ['boolean'](value: boolean, _ctx: Ref[]): Ref {
+  ['boolean'](value: boolean, _ctx: unknown[]): Ref {
     return new ConstRef(value);
   }
 
-  ['symbol'](value: symbol, _ctx: Ref[]): Ref {
+  ['symbol'](value: symbol, _ctx: unknown[]): Ref {
     return new SymbolRef(value);
   }
 
-  ['undefined'](_value: undefined, _ctx: Ref[]): Ref {
+  ['undefined'](_value: undefined, _ctx: unknown[]): Ref {
     return UndefinedRef.value;
   }
 
-  ['object'](value: object, ctx: Ref[]): Ref {
+  ['object'](value: object, ctx: unknown[]): Ref {
     if (value === null) return ObjectRef.null;
 
     return this.objectPool.ref(value, (ref) => {
       if (Array.isArray(value)) ref = new ArrayRef(value);
+
+      for (const [key, val] of Object.entries(value)) {
+        ref.addProperty(this.convert(key) as KeyRef, this.convert(val, [value, ...ctx]));
+      }
+
       return ref;
     });
   }
 
-  ['function'](value: Function, _ctx: Ref[]): Ref {
+  ['function'](value: Function, _ctx: unknown[]): Ref {
     return this.objectPool.ref(value, () => {
       return new FunctionRef(value);
     });
+  }
+
+  toString() {
+    let uniqId = 0;
+    const statements: string[] = [];
+    for (const ref of this.allRefs) {
+      if (ref.name || ref.refCount > 1) {
+        statements.push(`const ${ref.name || `$$${++uniqId}`} = ${ref.toExpression()};`);
+      }
+    }
+    return statements.join('\n');
   }
 }
