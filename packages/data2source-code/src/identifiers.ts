@@ -17,53 +17,53 @@ const candidatesComparator = createComparator<NameCandidate>(
 
 export class Ref<T> {
   /** @internal */
-  name: string | null = null;
+  _name: string | null = null;
 
   /** @internal */
-  exportNames: string[] = [];
+  _exportNames: string[] = [];
 
   /** @internal */
-  names: string[] = [];
+  _names: string[] = [];
 
   /** @internal */
-  suggestedNames = new Set<string>();
+  _suggestedNames = new Set<string>();
 
   /** @internal */
   constructor(private owner: Identifiers<T>, public value: T) {}
 
   setName(name: string, isExport: boolean = false): this {
     if (isExport) {
-      this.exportNames.push(name);
+      this._exportNames.push(name);
     } else {
-      this.names.push(name);
+      this._names.push(name);
     }
     this.owner._addNameFor(this.value, name, isExport);
     return this;
   }
 
   suggestNames(...names: string[]): this {
-    names.forEach((name) => this.suggestedNames.add(name));
+    names.forEach((name) => this._suggestedNames.add(name));
     this.owner._addSuggestedNamesFor(this.value, names);
     return this;
   }
 
   getName(): string {
-    if (this.name) return this.name;
-    let name = this.exportNames.sort(strLenComparator)[0];
-    if (!name) name = this.names.sort(strLenComparator)[0];
+    if (this._name) return this._name;
+    let name = this._exportNames.sort(strLenComparator)[0];
+    if (!name) name = this._names.sort(strLenComparator)[0];
     if (!name) {
       name = this.owner._resolveSuggestedNameFor(this);
     }
-    this.name = name;
+    this._name = name;
     return name;
   }
 }
 
 export class Identifiers<T> {
-  valueToIdent = new Map<T, Ref<T>>();
-  nameToIdent = new Map<string, Ref<T>>();
-  suggestedNameCount = new Map<string, Map<T, number>>();
-  exportedNames = new Set<string>();
+  private valueToIdent = new Map<T, Ref<T>>();
+  private nameToIdent = new Map<string, Ref<T>>();
+  private suggestedNameCount = new Map<string, Map<T, number>>();
+  private exportedNames = new Set<string>();
 
   getFor(value: T): Ref<T> {
     let ident = this.valueToIdent.get(value);
@@ -114,7 +114,7 @@ export class Identifiers<T> {
 
   _resolveSuggestedNameFor(ref: Ref<T>): string {
     const candidates: NameCandidate[] = [];
-    for (const name of ref.suggestedNames) {
+    for (const name of ref._suggestedNames) {
       const counts = this.suggestedNameCount.get(name);
       if (!counts) {
         throw new Error(`Name was not suggested: ${name}`);
