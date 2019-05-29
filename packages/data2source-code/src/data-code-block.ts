@@ -1,10 +1,10 @@
-import { RefConverter, Ref } from './ref-converter';
+import { ValueConverter, Value } from './ref-converter';
 
 export class DataCodeBlock {
-  constants = new Map<string, Ref>();
-  refConverter = new RefConverter();
+  constants = new Map<string, Value>();
+  refConverter = new ValueConverter();
 
-  addConst(name: string, value: unknown): Ref {
+  addConst(name: string, value: unknown): Value {
     const ref = this.refConverter.addConst(name, value);
     return ref;
   }

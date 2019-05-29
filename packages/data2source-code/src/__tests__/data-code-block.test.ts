@@ -9,10 +9,32 @@ import { DataCodeBlock } from '../data-code-block';
 
 describe('DataCodeBlock', () => {
   it('can export primitive values', () => {
-    const obj = { int: 1, str: 'string', nullish: null, undef: undefined };
+    const code = new DataCodeBlock();
+    code.addConst('int', 1);
+    code.addConst('str', 'string');
+    // code.addConst('str2', 'string');
+    code.addConst('nullish', null);
+    code.addConst('undef', undefined);
+    expect(code.toString()).toMatchInlineSnapshot(`
+            "const int = 1; // 1
+            const str = \\"string\\"; // 1
+            const nullish = null; // 1
+            const undef = void 0; // 1"
+        `);
+  });
+
+  it('can export primitive values', () => {
+    const obj = {
+      int: 1,
+      str: 'string',
+      nullish: null,
+      undef: undefined,
+    };
     const code = new DataCodeBlock();
     code.addConst('obj', obj);
-    expect(code.toString()).toMatchInlineSnapshot(`""`);
+    expect(code.toString()).toMatchInlineSnapshot(
+      `"const obj = {int:1,str:\\"string\\",nullish:null,undef:void 0}; // 1"`,
+    );
   });
 
   it('can export direct circular object', () => {

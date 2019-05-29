@@ -1,7 +1,7 @@
 import { PrimitiveConverters } from './data-converter';
 import { getPropertyName } from './utils';
 
-export abstract class Ref {
+export abstract class Value {
   refCount: number = 1;
   name: string | null = null;
 
@@ -14,6 +14,7 @@ export abstract class Ref {
     if (this.name) {
       throw new Error(`Name already set as '${this.name}'. New name '${name}' requested`);
     }
+    this.name = name;
     return this;
   }
 
@@ -24,7 +25,7 @@ export abstract class Ref {
   abstract toExpression(): string;
 }
 
-export class ConstRef extends Ref {
+export class ConstValue extends Value {
   constructor(public readonly value: unknown) {
     super();
   }
@@ -34,11 +35,11 @@ export class ConstRef extends Ref {
   }
 }
 
-export interface ConstRefConstructor<T extends ConstRef> {
+export interface ConstValueConstructor<T extends ConstValue> {
   new (value: T['value']): T;
 }
 
-export class SpecialConstRef extends ConstRef {
+export class SpecialConstValue extends ConstValue {
   /**
    * @internal
    */
@@ -51,15 +52,19 @@ export class SpecialConstRef extends ConstRef {
   }
 }
 
-export class UndefinedRef extends SpecialConstRef {
-  static value = new UndefinedRef();
-
-  private constructor() {
+export class UndefinedValue extends SpecialConstValue {
+  constructor() {
     super(void 0, 'void 0');
   }
 }
 
-export class KeyRef extends ConstRef {
+export class NullValue extends SpecialConstValue {
+  constructor() {
+    super(null, 'null');
+  }
+}
+
+export class KeyValue extends ConstValue {
   protected constructor(public readonly value: PropertyKey) {
     super(value);
   }
@@ -69,13 +74,13 @@ export class KeyRef extends ConstRef {
   }
 }
 
-export class StringRef extends KeyRef {
+export class StringValue extends KeyValue {
   constructor(public readonly value: string) {
     super(value);
   }
 }
 
-export class NumberRef extends KeyRef {
+export class NumberValue extends KeyValue {
   constructor(public readonly value: number) {
     super(value);
   }
@@ -89,13 +94,13 @@ export class NumberRef extends KeyRef {
   }
 }
 
-export class SymbolRef extends KeyRef {
+export class SymbolValue extends KeyValue {
   constructor(public readonly value: symbol) {
     super(value);
   }
 }
 
-export class BigIntRef extends ConstRef {
+export class BigIntValue extends ConstValue {
   constructor(public readonly value: bigint) {
     super(value);
   }
@@ -105,24 +110,22 @@ export class BigIntRef extends ConstRef {
   }
 }
 
-export class ObjectRef extends ConstRef {
-  public children = new Map<KeyRef, Ref>();
-
-  static null = new SpecialConstRef(null, 'null');
+export class ObjectValue extends ConstValue {
+  public children = new Map<KeyValue, Value>();
 
   constructor(public readonly value: object) {
     super(value);
   }
 
-  addProperty(name: KeyRef, value: Ref): void {
+  addProperty(name: KeyValue, value: Value): void {
     this.children.set(name, value);
   }
 
   toExpression() {
     const keyVals = [];
-    for (const [keyRef, valRef] of this.children) {
-      const key = keyRef.toKey();
-      const val = valRef.toExpression();
+    for (const [keyValue, valValue] of this.children) {
+      const key = keyValue.toKey();
+      const val = valValue.toExpression();
       // object shorthand
       keyVals.push(key === val ? key : key + ':' + val);
     }
@@ -130,7 +133,7 @@ export class ObjectRef extends ConstRef {
   }
 }
 
-export class ArrayRef extends ObjectRef {
+export class ArrayValue extends ObjectValue {
   constructor(public readonly value: unknown[]) {
     super(value);
   }
@@ -138,105 +141,107 @@ export class ArrayRef extends ObjectRef {
   toExpression() {
     const vals = [];
     let i = 0;
-    for (const [keyRef, valRef] of this.children) {
-      if (i++ !== keyRef.value) throw new Error('Whoops#!');
-      const val = valRef.toExpression();
+    for (const [keyValue, valValue] of this.children) {
+      if (i++ !== keyValue.value) throw new Error('Whoops#!');
+      const val = valValue.toExpression();
       vals.push(val);
     }
     return '[' + vals.join(',') + ']';
   }
 }
 
-export class FunctionRef extends ObjectRef {
+export class FunctionValue extends ObjectValue {
   constructor(public readonly value: Function) {
     super(value);
   }
 }
 
-export class RefPool<T extends ConstRef> {
+export class ValuePool<T extends ConstValue> {
   private refs = new Map<T['value'], T>();
-  constructor(private RefConstructor: ConstRefConstructor<T>) {}
+  constructor(private ValueConstructor: ConstValueConstructor<T>) {}
 
   ref(value: T['value'], create?: (ref: T) => T | void): T {
-    const existingRef = this.refs.get(value);
-    if (existingRef) return existingRef.ref();
+    const existingValue = this.refs.get(value);
+    if (existingValue) return existingValue.ref();
 
-    const newRef = new this.RefConstructor(value);
-    const resolvedRef = (create && create(newRef)) || newRef;
-    this.refs.set(value, resolvedRef);
-    return resolvedRef;
+    const newValue = new this.ValueConstructor(value);
+    const resolvedValue = (create && create(newValue)) || newValue;
+    this.refs.set(value, resolvedValue);
+    return resolvedValue;
   }
 }
 
-export class RefConverter extends PrimitiveConverters<Ref, unknown[]> {
-  private stringPool = new RefPool(StringRef);
-  private objectPool = new RefPool(ObjectRef);
-  private allRefs = new Set<Ref>();
+export class ValueConverter extends PrimitiveConverters<Value, unknown[]> {
+  private stringPool = new ValuePool(StringValue);
+  private objectPool = new ValuePool(ObjectValue);
+  private allValues = new Set<Value>();
 
-  addConst(name: string, value: unknown): Ref {
+  addConst(name: string, value: unknown): Value {
     const ref = this.convert(value).setName(name);
     return ref;
   }
 
-  convert(value: unknown, ctx: unknown[] = []): Ref {
+  convert(value: unknown, ctx: unknown[] = []): Value {
     if (ctx.includes(value)) {
       throw new Error('Circular value detected');
     }
     const ref = super.convert(value, ctx);
-    this.allRefs.add(ref);
+    this.allValues.add(ref);
     return ref;
   }
 
-  ['string'](value: string, _ctx: unknown[]): StringRef {
+  ['string'](value: string, _ctx: unknown[]): StringValue {
     return this.stringPool.ref(value);
   }
 
-  ['number'](value: number, _ctx: unknown[]): Ref {
-    return new NumberRef(value);
+  ['number'](value: number, _ctx: unknown[]): Value {
+    return new NumberValue(value);
   }
 
-  ['bigint'](value: bigint, _ctx: unknown[]): Ref {
-    return new BigIntRef(value);
+  ['bigint'](value: bigint, _ctx: unknown[]): Value {
+    return new BigIntValue(value);
   }
 
-  ['boolean'](value: boolean, _ctx: unknown[]): Ref {
-    return new ConstRef(value);
+  ['boolean'](value: boolean, _ctx: unknown[]): Value {
+    return new ConstValue(value);
   }
 
-  ['symbol'](value: symbol, _ctx: unknown[]): Ref {
-    return new SymbolRef(value);
+  ['symbol'](value: symbol, _ctx: unknown[]): Value {
+    return new SymbolValue(value);
   }
 
-  ['undefined'](_value: undefined, _ctx: unknown[]): Ref {
-    return UndefinedRef.value;
+  ['undefined'](_value: undefined, _ctx: unknown[]): Value {
+    return new UndefinedValue();
   }
 
-  ['object'](value: object, ctx: unknown[]): Ref {
-    if (value === null) return ObjectRef.null;
+  ['object'](value: object, ctx: unknown[]): Value {
+    if (value === null) return new NullValue();
 
     return this.objectPool.ref(value, (ref) => {
-      if (Array.isArray(value)) ref = new ArrayRef(value);
+      if (Array.isArray(value)) ref = new ArrayValue(value);
 
       for (const [key, val] of Object.entries(value)) {
-        ref.addProperty(this.convert(key) as KeyRef, this.convert(val, [value, ...ctx]));
+        ref.addProperty(this.convert(key) as KeyValue, this.convert(val, [value, ...ctx]));
       }
 
       return ref;
     });
   }
 
-  ['function'](value: Function, _ctx: unknown[]): Ref {
+  ['function'](value: Function, _ctx: unknown[]): Value {
     return this.objectPool.ref(value, () => {
-      return new FunctionRef(value);
+      return new FunctionValue(value);
     });
   }
 
   toString() {
     let uniqId = 0;
     const statements: string[] = [];
-    for (const ref of this.allRefs) {
+    for (const ref of this.allValues) {
       if (ref.name || ref.refCount > 1) {
-        statements.push(`const ${ref.name || `$$${++uniqId}`} = ${ref.toExpression()};`);
+        statements.push(
+          `const ${ref.name || `$$${++uniqId}`} = ${ref.toExpression()}; // ${ref.refCount}`,
+        );
       }
     }
     return statements.join('\n');
