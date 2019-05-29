@@ -194,27 +194,27 @@ export class ValueConverter extends PrimitiveConverters<Value, unknown[]> {
     return this.stringPool.ref(value);
   }
 
-  ['number'](value: number, _ctx: unknown[]): Value {
+  ['number'](value: number, _ctx: unknown[]): NumberValue {
     return new NumberValue(value);
   }
 
-  ['bigint'](value: bigint, _ctx: unknown[]): Value {
+  ['bigint'](value: bigint, _ctx: unknown[]): BigIntValue {
     return new BigIntValue(value);
   }
 
-  ['boolean'](value: boolean, _ctx: unknown[]): Value {
+  ['boolean'](value: boolean, _ctx: unknown[]): ConstValue {
     return new ConstValue(value);
   }
 
-  ['symbol'](value: symbol, _ctx: unknown[]): Value {
+  ['symbol'](value: symbol, _ctx: unknown[]): SymbolValue {
     return new SymbolValue(value);
   }
 
-  ['undefined'](_value: undefined, _ctx: unknown[]): Value {
+  ['undefined'](_value: undefined, _ctx: unknown[]): UndefinedValue {
     return new UndefinedValue();
   }
 
-  ['object'](value: object, ctx: unknown[]): Value {
+  ['object'](value: object, ctx: unknown[]): NullValue | ArrayValue | ObjectValue {
     if (value === null) return new NullValue();
 
     return this.objectPool.ref(value, (ref) => {
@@ -228,10 +228,10 @@ export class ValueConverter extends PrimitiveConverters<Value, unknown[]> {
     });
   }
 
-  ['function'](value: Function, _ctx: unknown[]): Value {
+  ['function'](value: Function, _ctx: unknown[]): FunctionValue {
     return this.objectPool.ref(value, () => {
       return new FunctionValue(value);
-    });
+    }) as FunctionValue;
   }
 
   toString() {
