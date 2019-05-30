@@ -194,7 +194,7 @@ export function getPropertyAccess(name: PropertyKey): string {
     : `[${JSON.stringify(name)}]`;
 }
 
-export function getPropertyPath(identifier: string, ...path: PropertyKey[]) {
+export function getPropertyPath(identifier: string, path: PropertyKey[]) {
   return identifier + path.map(getPropertyAccess).join('');
 }
 

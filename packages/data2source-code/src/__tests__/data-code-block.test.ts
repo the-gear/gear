@@ -12,15 +12,12 @@ describe('DataCodeBlock', () => {
     const code = new DataCodeBlock();
     code.addConst('int', 1);
     code.addConst('str', 'string');
-    // code.addConst('str2', 'string');
+    code.addConst('str2', 'string');
     code.addConst('nullish', null);
     code.addConst('undef', undefined);
-    expect(code.toString()).toMatchInlineSnapshot(`
-            "const int = 1; // 1
-            const str = \\"string\\"; // 1
-            const nullish = null; // 1
-            const undef = void 0; // 1"
-        `);
+    expect(code.toString()).toMatchInlineSnapshot(
+      `"const undef = void 0;const nullish = null;const str = \\"string\\";const int = 1;"`,
+    );
   });
 
   it('can export primitive values', () => {
@@ -33,7 +30,7 @@ describe('DataCodeBlock', () => {
     const code = new DataCodeBlock();
     code.addConst('obj', obj);
     expect(code.toString()).toMatchInlineSnapshot(
-      `"const obj = {int:1,str:\\"string\\",nullish:null,undef:void 0}; // 1"`,
+      `"const obj = {int:1,str:\\"string\\",nullish:null,undef:void 0};"`,
     );
   });
 
@@ -42,6 +39,10 @@ describe('DataCodeBlock', () => {
     circObject.circObject = circObject;
     const code = new DataCodeBlock();
     code.addConst('circObj', circObject);
+    expect(code.toString()).toMatchInlineSnapshot(`
+      "const circObj = {circObject:{/* circular circObj */}};
+      circObj.circObject = circObj; // circular"
+    `);
   });
 
   it('can export direct circular array', () => {
@@ -49,5 +50,9 @@ describe('DataCodeBlock', () => {
     circArray.push(circArray);
     const code = new DataCodeBlock();
     code.addConst('circArray', circArray);
+    expect(code.toString()).toMatchInlineSnapshot(`
+      "const circArray = [[/* circular circArray */]];
+      circArray[0] = circArray; // circular"
+    `);
   });
 });

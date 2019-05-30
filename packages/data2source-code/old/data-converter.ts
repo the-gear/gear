@@ -1,4 +1,4 @@
-import { getPropertyName } from './utils';
+import { getPropertyName } from '../src/utils';
 
 export type ReturnOfTypeof =
   | 'string'

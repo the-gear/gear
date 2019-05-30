@@ -1,46 +1,49 @@
-export interface TypeofVisitor {
-  ['string'](value: string): void;
-  ['number'](value: number): void;
-  ['bigint'](value: bigint): void;
-  ['boolean'](value: boolean): void;
-  ['symbol'](value: symbol): void;
-  ['undefined'](value: undefined): void;
-  ['object'](value: object): void;
-  ['function'](value: Function): void;
-}
-
-export abstract class DataVisitor {
+/**
+ * Abstract class that can visit any data structure
+ */
+export abstract class AbstractDataVisitor {
   protected parentKeys: PropertyKey[] = [];
   protected parents: object[] = [];
 
-  ['string'](_value: string): void {}
-  ['number'](_value: number): void {}
-  ['bigint'](_value: bigint): void {}
-  ['boolean'](_value: boolean): void {}
-  ['symbol'](_value: symbol): void {}
-  ['undefined'](_value: undefined): void {}
-  ['object'](value: object): void {
+  public visit(value: unknown) {
+    (this[typeof value] as this['visit'])(value);
+  }
+
+  protected ['string'](_value: string): void {}
+  protected ['number'](_value: number): void {}
+  protected ['bigint'](_value: bigint): void {}
+  protected ['boolean'](_value: boolean): void {}
+  protected ['symbol'](_value: symbol): void {}
+  protected ['undefined'](_value: undefined): void {}
+  protected ['object'](value: object): void {
     if (value === null) return this.visitNull();
     if (Array.isArray(value)) return this.visitArray(value);
     return this.visitObject(value);
   }
-  ['function'](_value: Function): void {}
+  protected ['function'](_value: Function): void {}
 
-  visit(value: unknown) {
-    (this[typeof value] as this['visit'])(value);
-  }
-  visitNull(): void {}
-  visitArray(value: unknown[]): void {
+  protected visitNull(): void {}
+
+  protected visitArray(value: unknown[]): void {
     this.visitArrayValues(value);
   }
-  visitObject(value: object): void {
+
+  protected visitObject(value: object): void {
     this.visitObjectProperties(value, false);
   }
-  visitPropertyKey(_key: PropertyKey): void {}
-  visitProperty(value: unknown, _key: PropertyKey, _parent: object, _isArray: boolean): void {
+
+  protected visitPropertyKey(_key: PropertyKey): void {}
+
+  protected visitProperty(
+    value: unknown,
+    _key: PropertyKey,
+    _parent: object,
+    _isArray: boolean,
+  ): void {
     this.visit(value);
   }
-  visitRecursiveProperty(
+
+  protected visitRecursiveProperty(
     _value: unknown,
     _key: PropertyKey,
     _parent: object,
@@ -48,7 +51,8 @@ export abstract class DataVisitor {
   ): void {
     throw new Error(`Circular value detected`);
   }
-  visitArrayValues(parent: unknown[]): void {
+
+  protected visitArrayValues(parent: unknown[]): void {
     this.parents.push(parent);
     try {
       const length = parent.length;
@@ -69,7 +73,8 @@ export abstract class DataVisitor {
       this.parents.pop();
     }
   }
-  visitObjectProperties(parent: object, isArray: boolean): void {
+
+  protected visitObjectProperties(parent: object, isArray: boolean): void {
     this.parents.push(parent);
     try {
       for (const [key, value] of Object.entries(parent)) {

@@ -1,7 +1,7 @@
 import { PrimitiveConverters } from './data-converter';
-import { getPropertyName } from './utils';
-import { Identifiers, Ref } from './identifiers';
-import { isValidIdentifierName } from '../old/utils';
+import { getPropertyName } from '../src/utils';
+import { Identifiers, Ref } from '../src/identifiers';
+import { isValidIdentifierName } from './utils';
 
 export abstract class Value {
   refCount: number = 1;
