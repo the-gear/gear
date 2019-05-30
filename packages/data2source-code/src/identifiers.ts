@@ -41,10 +41,14 @@ export class Ref<T> {
     return this;
   }
 
-  suggestNames(...names: string[]): this {
+  suggestNames(names: string[]): this {
     names.forEach((name) => this._suggestedNames.add(name));
     this.owner._addSuggestedNamesFor(this.value, names);
     return this;
+  }
+
+  hasName(): boolean {
+    return !!this._name;
   }
 
   getName(): string {
