@@ -1,4 +1,3 @@
-# `@the-gear/ts-source-builder`
+# `data2source-code`
 
-- Generate TypeScript source programmatically
-- get transpiled `.js` code and `.d.ts` definitions
+- Serialize various (circular) data structures to JS source

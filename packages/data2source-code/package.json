@@ -1,6 +1,6 @@
 {
   "name": "data2source-code",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "description": "Generate TypeScript Source programmatically",
   "author": "Pavel Lang <langpavel@phpskelet.org>",
