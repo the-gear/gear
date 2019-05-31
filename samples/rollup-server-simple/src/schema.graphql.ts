@@ -102,7 +102,8 @@ export function createQueryType(): GraphQLObjectType {
   return new GraphQLObjectType({
     name: 'Query',
     description: 'Root query type 3',
-    // interfaces?: GraphQLInterfacesThunk | Array<GraphQLInterfaceType>;
+    // interfaces?: GraphQLInterfacesThunk | Array<GraphQLInterfaceType>;,
+    fields: () => {},
   });
 }
 

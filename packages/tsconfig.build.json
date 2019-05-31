@@ -8,6 +8,7 @@
     { "path": "./cli" },
     { "path": "./graphql-types" },
     { "path": "./data2source-code" },
+    { "path": "./graphql-transform-ts" },
     { "path": "./rollup-plugin-gear-graphql" }
   ]
 }

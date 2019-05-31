@@ -7,9 +7,13 @@ export class DataCodeBlock {
   refVisitor = new RefVisitor(this.identifiers);
 
   /** Add data which may be used only inside module */
-  addConst(name: string, value: unknown): Ref {
+  addConst(value: unknown, name?: string): Ref {
     this.refVisitor.add(value);
-    return this.identifiers.getFor(value).setName(name, false);
+    const id = this.identifiers.getFor(value);
+    if (name) {
+      id.setName(name, false);
+    }
+    return id;
   }
 
   /** Exported data */

@@ -30,7 +30,7 @@ export function transformDefinitionNode(def: DefinitionNode) {
     case 'EnumTypeExtension':
     case 'InputObjectTypeExtension':
     default: {
-      console.log(`[graphql-ts] ${def.kind}`);
+      throw new Error(`[graphql-transform-ts] ${def.kind}`);
     }
   }
 }

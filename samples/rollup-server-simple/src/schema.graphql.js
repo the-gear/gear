@@ -66,7 +66,9 @@ export var documentAst = {
 export function createQueryType() {
     return new GraphQLObjectType({
         name: 'Query',
-        description: 'Root query type 3'
+        description: 'Root query type 3',
+        // interfaces?: GraphQLInterfacesThunk | Array<GraphQLInterfaceType>;,
+        fields: function () { }
     });
 }
 export var schema = /*@__PURE__*/ buildASTSchema(documentAst);

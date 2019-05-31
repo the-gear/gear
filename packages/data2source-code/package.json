@@ -33,6 +33,7 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
+    "prettier": "^1.17.1",
     "rollup": "^1.12.5"
   }
 }
