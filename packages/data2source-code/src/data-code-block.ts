@@ -6,6 +6,13 @@ export class DataCodeBlock {
   identifiers = new Identifiers();
   refVisitor = new RefVisitor(this.identifiers);
 
+  /** Add data which may be used only inside module */
+  addConst(name: string, value: unknown): Ref {
+    this.refVisitor.add(value);
+    return this.identifiers.getFor(value).setName(name, false);
+  }
+
+  /** Exported data */
   addExport(name: string, value: unknown): Ref {
     this.refVisitor.add(value);
     return this.identifiers.getFor(value).setName(name, true);

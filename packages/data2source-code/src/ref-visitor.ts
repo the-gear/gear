@@ -4,6 +4,7 @@ import { Identifiers, Ref } from './identifiers';
 
 type SeenEntry = [Ref, object[]];
 
+// TODO: this does not work well in many situations.
 const dependencyComparator = createComparator<SeenEntry>(
   (a, b) => (b[1].indexOf(a[0].value as object) >= 0 ? 1 : 0),
   (_, b) => b[0].count,
@@ -11,8 +12,8 @@ const dependencyComparator = createComparator<SeenEntry>(
 );
 
 /**
- * Looking for duplicate object references in deep data structure,
- * Returning ordered duplicate list
+ * Looking for object references in deep data structure,
+ * Returning sorted list of refs
  */
 export class RefVisitor extends AbstractDataVisitor {
   public collectStrings: boolean = false;
