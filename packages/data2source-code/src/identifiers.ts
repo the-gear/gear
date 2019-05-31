@@ -15,7 +15,9 @@ const candidatesComparator = createComparator<NameCandidate>(
   (x) => x.name,
 );
 
-export class Ref<T> {
+export class Ref<T = unknown> {
+  count: number = 0;
+
   /** @internal */
   _name: string | null = null;
 
@@ -61,9 +63,14 @@ export class Ref<T> {
     this._name = name;
     return name;
   }
+
+  ref(): this {
+    this.count++;
+    return this;
+  }
 }
 
-export class Identifiers<T> {
+export class Identifiers<T = unknown> {
   private valueToIdent = new Map<T, Ref<T>>();
   private nameToIdent = new Map<string, Ref<T>>();
   private suggestedNameCount = new Map<string, Map<T, number>>();

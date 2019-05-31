@@ -6,24 +6,49 @@ export class JsDataWriter extends SimpleDataWriter {
   private circulars: string[] = [];
   private refs = new Map<object, string>();
 
-  public static writeAssignment(name: string, value: unknown): string {
-    return new this().writeAssignment(name, value);
+  constructor(public valueSubstitutions: Map<unknown, string> = new Map<unknown, string>()) {
+    super();
   }
 
-  public writeAssignment(name: string, value: unknown): string {
+  public static writeDefinition(name: string, value: unknown): string {
+    return new this().writeDefinition(name, value).toString();
+  }
+
+  public addSubstitution(value: unknown, subst: string): this {
+    this.valueSubstitutions.set(value, subst);
+    return this;
+  }
+
+  public writeDefinition(name: string, value: unknown, binding: string = 'const'): this {
     this.name = name;
-    this.write(`const ${name} = `);
+    this.writeRaw(`${binding} ${name} = `);
     this.visit(value);
-    this.write(`;`);
+    this.writeRaw(`;`);
     this.name = null;
 
     if (this.circulars.length) {
-      this.write('\n');
-      this.write(this.circulars.join('\n'));
+      this.writeRaw('\n');
+      this.writeRaw(this.circulars.join('\n'));
       this.circulars = [];
     }
 
-    return this.toString();
+    this.valueSubstitutions.set(value, name);
+    for (const [val, path] of this.refs) {
+      if (!this.valueSubstitutions.has(val)) {
+        this.addSubstitution(val, path);
+      }
+    }
+    this.refs = new Map();
+    return this;
+  }
+
+  visit(value: unknown): void {
+    const replace = this.valueSubstitutions.get(value);
+    if (replace) {
+      this.writeRaw(replace);
+    } else {
+      super.visit(value);
+    }
   }
 
   protected ['object'](value: object): void {
@@ -36,11 +61,11 @@ export class JsDataWriter extends SimpleDataWriter {
     const path = getPropertyPath(this.name, this.parentKeys);
     if (writtenPath) {
       if (isArray) {
-        this.write(`[/* ref ${writtenPath} */]`);
+        this.writeRaw(`[/* ref ${writtenPath} */]`);
       } else {
-        this.write(`{/* ref ${writtenPath} */}`);
+        this.writeRaw(`{/* ref ${writtenPath} */}`);
       }
-      this.circulars.push(`${path} = ${writtenPath}; // ref`);
+      this.circulars.push(`${path} = ${writtenPath}; /*ref*/`);
     } else {
       super['object'](value);
       this.refs.set(value, path);
@@ -60,11 +85,11 @@ export class JsDataWriter extends SimpleDataWriter {
     const shortPath = getPropertyPath(this.name, this.parentKeys.slice(0, index));
     const longPath = getPropertyPath(this.name, this.parentKeys);
     if (Array.isArray(value)) {
-      this.write(`[/* circular ${shortPath} */]`);
+      this.writeRaw(`[/* circular ${shortPath} */]`);
     } else {
-      this.write(`{/* circular ${shortPath} */}`);
+      this.writeRaw(`{/* circular ${shortPath} */}`);
     }
-    this.write(',');
-    this.circulars.push(`${longPath} = ${shortPath}; // circular`);
+    this.writeRaw(',');
+    this.circulars.push(`${longPath} = ${shortPath}; /*circ*/`);
   }
 }

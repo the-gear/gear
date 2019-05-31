@@ -1,11 +1,13 @@
 import { AbstractDataVisitor } from './abstract-data-visitor';
-import { createComparator } from './utils';
+import { createComparator, isValidIdentifierName } from './utils';
+import { Identifiers, Ref } from './identifiers';
 
-type SeenEntry = [unknown, object[]];
+type SeenEntry = [Ref, object[]];
 
 const dependencyComparator = createComparator<SeenEntry>(
-  (a, b) => b[1].indexOf(a[0] as object),
-  (a) => a[1].length,
+  (a, b) => (b[1].indexOf(a[0].value as object) >= 0 ? 1 : 0),
+  (_, b) => b[0].count,
+  (_, b) => b[1].length,
 );
 
 /**
@@ -15,8 +17,12 @@ const dependencyComparator = createComparator<SeenEntry>(
 export class RefVisitor extends AbstractDataVisitor {
   public collectStrings: boolean = false;
 
+  constructor(public identifiers: Identifiers) {
+    super();
+  }
+
   private seen1 = new Set<unknown>();
-  private seen2 = new Map<unknown, object[]>();
+  private seen2 = new Map<Ref, object[]>();
 
   public add(value: unknown) {
     this.visit(value);
@@ -24,8 +30,12 @@ export class RefVisitor extends AbstractDataVisitor {
   }
 
   private ref(value: unknown): boolean {
+    const ident = this.identifiers
+      .getFor(value)
+      .ref()
+      .suggestNames([...this.parentKeys].reverse().filter(isValidIdentifierName));
     if (this.seen1.has(value)) {
-      this.seen2.set(value, [...this.parents]);
+      this.seen2.set(ident, [...this.parents]);
       return false;
     } else {
       this.seen1.add(value);
@@ -33,16 +43,17 @@ export class RefVisitor extends AbstractDataVisitor {
     }
   }
 
+  // protected ['number'](_value: number): void {}
+  // protected ['bigint'](_value: bigint): void {}
+  // protected ['boolean'](_value: boolean): void {}
+  // protected ['undefined'](_value: undefined): void {}
+
   protected ['string'](value: string): void {
     if (this.collectStrings) this.ref(value);
   }
-  protected ['number'](_value: number): void {}
-  protected ['bigint'](_value: bigint): void {}
-  protected ['boolean'](_value: boolean): void {}
   protected ['symbol'](value: symbol): void {
     this.ref(value);
   }
-  protected ['undefined'](_value: undefined): void {}
   protected ['object'](value: object): void {
     if (value === null) return this.visitNull();
     if (this.ref(value)) {
@@ -62,9 +73,9 @@ export class RefVisitor extends AbstractDataVisitor {
     this.ref(value);
   }
 
-  getDuplicates(): unknown[] {
-    const dups: SeenEntry[] = [...this.seen2.entries()].reverse();
-    dups.sort(dependencyComparator);
-    return dups.map((entry) => entry[0]);
+  getIdentifiers(): Ref[] {
+    const deps: SeenEntry[] = [...this.seen2.entries()];
+    deps.sort(dependencyComparator);
+    return deps.map((entry) => entry[0]);
   }
 }

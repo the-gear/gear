@@ -155,7 +155,8 @@ export function suggestSafeName(name: string): string {
 /**
  * Test if name can be used as identifier
  */
-export function isValidIdentifierName(name: string): boolean {
+export function isValidIdentifierName(name: unknown): name is string {
+  if (typeof name !== 'string') return false;
   if (forbiddenIdentifierNameSet.has(name)) return false;
   return reIdentifier.test(name);
 }

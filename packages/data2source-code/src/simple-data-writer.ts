@@ -14,7 +14,7 @@ export class SimpleDataWriter extends AbstractDataVisitor {
     return this.toString();
   }
 
-  protected write(s: string): void {
+  public writeRaw(s: string): void {
     this.code.push(s);
   }
 
@@ -26,22 +26,22 @@ export class SimpleDataWriter extends AbstractDataVisitor {
   }
 
   protected ['string'](value: string): void {
-    return this.write(JSON.stringify(value));
+    return this.writeRaw(JSON.stringify(value));
   }
 
   protected ['number'](value: number): void {
-    if (Number.isNaN(value)) return this.write('NaN');
-    if (value === Number.POSITIVE_INFINITY) return this.write('Infinity');
-    if (value === Number.NEGATIVE_INFINITY) return this.write('-Infinity');
-    return this.write(value.toString());
+    if (Number.isNaN(value)) return this.writeRaw('NaN');
+    if (value === Number.POSITIVE_INFINITY) return this.writeRaw('Infinity');
+    if (value === Number.NEGATIVE_INFINITY) return this.writeRaw('-Infinity');
+    return this.writeRaw(value.toString());
   }
 
   protected ['bigint'](value: bigint): void {
-    return this.write(`BigInt('${value.toString()}')`);
+    return this.writeRaw(`BigInt('${value.toString()}')`);
   }
 
   protected ['boolean'](value: boolean): void {
-    return this.write(value ? 'true' : 'false');
+    return this.writeRaw(value ? 'true' : 'false');
   }
 
   protected ['symbol'](_value: symbol): void {
@@ -49,7 +49,7 @@ export class SimpleDataWriter extends AbstractDataVisitor {
   }
 
   protected ['undefined'](_value: undefined): void {
-    return this.write('void 0');
+    return this.writeRaw('void 0');
   }
 
   protected ['function'](_value: Function): void {
@@ -57,28 +57,28 @@ export class SimpleDataWriter extends AbstractDataVisitor {
   }
 
   protected visitNull() {
-    this.write('null');
+    this.writeRaw('null');
   }
 
   protected visitArray(value: unknown[]): void {
-    this.write('[');
+    this.writeRaw('[');
     this.visitArrayValues(value);
     if (value.length) {
       this.deleteLast(/,\s*$/m);
     }
-    this.write(']');
+    this.writeRaw(']');
   }
 
   protected visitObject(value: object): void {
-    this.write('{');
+    this.writeRaw('{');
     this.visitObjectProperties(value, false);
     this.deleteLast(/,\s*$/m);
-    this.write('}');
+    this.writeRaw('}');
   }
 
   protected visitPropertyKey(key: PropertyKey): void {
-    this.write(getPropertyName(key));
-    this.write(':');
+    this.writeRaw(getPropertyName(key));
+    this.writeRaw(':');
   }
 
   protected visitProperty(
@@ -88,11 +88,11 @@ export class SimpleDataWriter extends AbstractDataVisitor {
     isArray: boolean,
   ): void {
     if (isArray && !Object.prototype.hasOwnProperty.call(parent, key)) {
-      this.write('');
+      this.writeRaw('');
     } else {
       this.visit(value);
     }
-    this.write(',');
+    this.writeRaw(',');
   }
 
   toString() {

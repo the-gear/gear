@@ -3,22 +3,25 @@ import { RefVisitor } from './ref-visitor';
 import { JsDataWriter } from './js-data-writer';
 
 export class DataCodeBlock {
-  identifiers = new Identifiers<unknown>();
-  refVisitor = new RefVisitor();
+  identifiers = new Identifiers();
+  refVisitor = new RefVisitor(this.identifiers);
 
-  addConst(name: string, value: unknown): Ref<unknown> {
+  addExport(name: string, value: unknown): Ref {
     this.refVisitor.add(value);
-    return this.identifiers.getFor(value).setName(name);
+    return this.identifiers.getFor(value).setName(name, true);
   }
 
   toString(): string {
     const dataWriter = new JsDataWriter();
-    const idents = [];
-    for (const value of this.refVisitor.getDuplicates()) {
-      idents.push(this.identifiers.getFor(value));
-    }
-    for (const ident of idents) {
-      dataWriter.writeAssignment(ident.getName(), ident.value);
+    for (const ident of this.refVisitor.getIdentifiers()) {
+      const name = ident.getName();
+
+      dataWriter.writeDefinition(
+        name,
+        ident.value,
+        this.identifiers.isExportName(name) ? 'export const' : 'const',
+      );
+      dataWriter.writeRaw('\n');
     }
     return dataWriter.toString();
   }
