@@ -33,6 +33,6 @@
     "watch": "tsc --build --watch"
   },
   "dependencies": {
-    "rollup": "^1.12.4"
+    "rollup": "^1.12.5"
   }
 }
