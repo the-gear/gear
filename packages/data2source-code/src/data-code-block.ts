@@ -15,13 +15,18 @@ export class DataCodeBlock {
     const dataWriter = new JsDataWriter();
     for (const ident of this.refVisitor.getIdentifiers()) {
       const name = ident.getName();
-
       dataWriter.writeDefinition(
         name,
         ident.value,
         this.identifiers.isExportName(name) ? 'export const' : 'const',
       );
-      dataWriter.writeRaw('\n');
+      ident.getAliases().forEach((alias) => {
+        dataWriter.writeDefinition(
+          alias,
+          ident.value,
+          this.identifiers.isExportName(alias) ? 'export const' : 'const',
+        );
+      });
     }
     return dataWriter.toString();
   }

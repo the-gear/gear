@@ -16,12 +16,12 @@ describe('DataCodeBlock', () => {
     code.addExport('nullish', null);
     code.addExport('undef', undefined);
     expect(code.toString()).toMatchInlineSnapshot(`
-            "export const str = \\"string\\";
-            export const int = 1;
-            export const nullish = null;
-            export const undef = void 0;
-            "
-        `);
+      "export const str = \\"string\\";
+      export const str2 = str;
+      export const int = 1;
+      export const nullish = null;
+      export const undef = void 0;"
+    `);
   });
 
   it('can export primitive values', () => {
@@ -33,10 +33,9 @@ describe('DataCodeBlock', () => {
     };
     const code = new DataCodeBlock();
     code.addExport('obj', obj);
-    expect(code.toString()).toMatchInlineSnapshot(`
-            "export const obj = {int:1,str:\\"string\\",nullish:null,undef:void 0};
-            "
-        `);
+    expect(code.toString()).toMatchInlineSnapshot(
+      `"export const obj = {int:1,str:\\"string\\",nullish:null,undef:void 0};"`,
+    );
   });
 
   it('can export direct circular object', () => {
@@ -45,10 +44,9 @@ describe('DataCodeBlock', () => {
     const code = new DataCodeBlock();
     code.addExport('circObj', circObject);
     expect(code.toString()).toMatchInlineSnapshot(`
-            "export const circObj = {circObject:{/* circular circObj */}};
-            circObj.circObject = circObj; /*circ*/
-            "
-        `);
+      "export const circObj = {circObject:{/* circular circObj */}};
+      circObj.circObject = circObj; /*circ*/"
+    `);
   });
 
   it('can export direct circular array', () => {
@@ -57,10 +55,9 @@ describe('DataCodeBlock', () => {
     const code = new DataCodeBlock();
     code.addExport('circArray', circArray);
     expect(code.toString()).toMatchInlineSnapshot(`
-            "export const circArray = [[/* circular circArray */]];
-            circArray[0] = circArray; /*circ*/
-            "
-        `);
+      "export const circArray = [[/* circular circArray */]];
+      circArray[0] = circArray; /*circ*/"
+    `);
   });
 
   it('can export circular object with references', () => {
@@ -79,8 +76,7 @@ describe('DataCodeBlock', () => {
       "export const child1 = {name:\\"child2\\"};
       export const child0 = {name:\\"child1\\"};
       const children$1 = {name:\\"child3\\"};
-      export const root = {root:true,children:[child0,child1,children$1,children$1]};
-      "
+      export const root = {root:true,children:[child0,child1,children$1,children$1]};"
     `);
   });
 });

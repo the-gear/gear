@@ -33,6 +33,11 @@ export class Ref<T = unknown> {
   /** @internal */
   constructor(private owner: Identifiers<T>, public value: T) {}
 
+  ref(): this {
+    this.count++;
+    return this;
+  }
+
   setName(name: string, isExport: boolean = false): this {
     if (isExport) {
       this._exportNames.push(name);
@@ -64,9 +69,11 @@ export class Ref<T = unknown> {
     return name;
   }
 
-  ref(): this {
-    this.count++;
-    return this;
+  getAliases(): string[] {
+    const all = new Set<string>(this._exportNames);
+    this._names.forEach(all.add, all);
+    if (this._name) all.delete(this._name);
+    return [...all];
   }
 }
 

@@ -14,8 +14,18 @@ export class SimpleDataWriter extends AbstractDataVisitor {
     return this.toString();
   }
 
-  public writeRaw(s: string): void {
-    this.code.push(s);
+  public ensureNewline(): this {
+    const length = this.code.length;
+    if (!length) return this;
+    if (!this.code[length - 1].endsWith('\n')) {
+      this.code.push('\n');
+    }
+    return this;
+  }
+
+  public writeRaw(...str: string[]): this {
+    str.forEach((s) => this.code.push(s));
+    return this;
   }
 
   protected deleteLast(reTest: RegExp): void {
@@ -26,22 +36,27 @@ export class SimpleDataWriter extends AbstractDataVisitor {
   }
 
   protected ['string'](value: string): void {
-    return this.writeRaw(JSON.stringify(value));
+    this.writeRaw(JSON.stringify(value));
   }
 
   protected ['number'](value: number): void {
-    if (Number.isNaN(value)) return this.writeRaw('NaN');
-    if (value === Number.POSITIVE_INFINITY) return this.writeRaw('Infinity');
-    if (value === Number.NEGATIVE_INFINITY) return this.writeRaw('-Infinity');
-    return this.writeRaw(value.toString());
+    if (Number.isNaN(value)) {
+      this.writeRaw('NaN');
+    } else if (value === Number.POSITIVE_INFINITY) {
+      this.writeRaw('Infinity');
+    } else if (value === Number.NEGATIVE_INFINITY) {
+      this.writeRaw('-Infinity');
+    } else {
+      this.writeRaw(value.toString());
+    }
   }
 
   protected ['bigint'](value: bigint): void {
-    return this.writeRaw(`BigInt('${value.toString()}')`);
+    this.writeRaw(`BigInt('${value.toString()}')`);
   }
 
   protected ['boolean'](value: boolean): void {
-    return this.writeRaw(value ? 'true' : 'false');
+    this.writeRaw(value ? 'true' : 'false');
   }
 
   protected ['symbol'](_value: symbol): void {
@@ -49,7 +64,7 @@ export class SimpleDataWriter extends AbstractDataVisitor {
   }
 
   protected ['undefined'](_value: undefined): void {
-    return this.writeRaw('void 0');
+    this.writeRaw('void 0');
   }
 
   protected ['function'](_value: Function): void {

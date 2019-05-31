@@ -21,13 +21,14 @@ export class JsDataWriter extends SimpleDataWriter {
 
   public writeDefinition(name: string, value: unknown, binding: string = 'const'): this {
     this.name = name;
+    this.ensureNewline();
     this.writeRaw(`${binding} ${name} = `);
     this.visit(value);
     this.writeRaw(`;`);
     this.name = null;
 
     if (this.circulars.length) {
-      this.writeRaw('\n');
+      this.ensureNewline();
       this.writeRaw(this.circulars.join('\n'));
       this.circulars = [];
     }
@@ -38,6 +39,7 @@ export class JsDataWriter extends SimpleDataWriter {
         this.addSubstitution(val, path);
       }
     }
+
     this.refs = new Map();
     return this;
   }

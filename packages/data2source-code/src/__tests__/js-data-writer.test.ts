@@ -41,9 +41,9 @@ describe('JsDataWriter', () => {
       a2,
     ];
     expect(serialize(arr)).toMatchInlineSnapshot(`
-                  "const data = [1,\\"string\\",BigInt('618970019642690137449562111'),true,false,null,void 0,NaN,Infinity,-Infinity,[2],[/* ref data[10] */]];
-                  data[11] = data[10]; /*ref*/"
-            `);
+      "const data = [1,\\"string\\",BigInt('618970019642690137449562111'),true,false,null,void 0,NaN,Infinity,-Infinity,[2],[/* ref data[10] */]];
+      data[11] = data[10]; /*ref*/"
+    `);
   });
 
   it('can write sparse array', () => {
@@ -79,9 +79,9 @@ describe('JsDataWriter', () => {
     const circObject = { circObject: {} };
     circObject.circObject = circObject;
     expect(serialize(circObject)).toMatchInlineSnapshot(`
-                  "const data = {circObject:{/* circular data */}};
-                  data.circObject = data; /*circ*/"
-            `);
+      "const data = {circObject:{/* circular data */}};
+      data.circObject = data; /*circ*/"
+    `);
   });
 
   it('can write deep circular object', () => {
@@ -92,10 +92,10 @@ describe('JsDataWriter', () => {
     const a = { b };
     e.a = a;
     expect(serialize(a)).toMatchInlineSnapshot(`
-                  "const data = {b:{c:{d:{e:{a:{/* circular data */}}}},d:{/* ref data.b.c.d */}}};
-                  data.b.c.d.e.a = data; /*circ*/
-                  data.b.d = data.b.c.d; /*ref*/"
-            `);
+      "const data = {b:{c:{d:{e:{a:{/* circular data */}}}},d:{/* ref data.b.c.d */}}};
+      data.b.c.d.e.a = data; /*circ*/
+      data.b.d = data.b.c.d; /*ref*/"
+    `);
   });
 
   it('can write circular array', () => {
@@ -103,10 +103,10 @@ describe('JsDataWriter', () => {
     circArray.push(circArray);
     circArray.push(circArray);
     expect(serialize(circArray)).toMatchInlineSnapshot(`
-                  "const data = [[/* circular data */],[/* circular data */]];
-                  data[0] = data; /*circ*/
-                  data[1] = data; /*circ*/"
-            `);
+      "const data = [[/* circular data */],[/* circular data */]];
+      data[0] = data; /*circ*/
+      data[1] = data; /*circ*/"
+    `);
   });
 
   it('can be imported', () => {
